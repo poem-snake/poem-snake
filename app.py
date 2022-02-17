@@ -247,6 +247,9 @@ def answer(text):
     else:
         emit('answer_check', {'message': '没有找到'})
 
+@socket_io.on('test')
+def test():
+    emit('test', {'game': json.dumps(current_app.game.info()), 'round': json.dumps(current_app.round.info())})
 
 if __name__ == '__main__':
     socket_io.run(app)
