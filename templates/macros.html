@@ -1,0 +1,26 @@
+{% macro render_nav_item(endpoint, text, badge='') %}
+    <a class="item {% if request.endpoint and request.endpoint == endpoint %}active{% endif %}"
+       href="{{ url_for(endpoint, **kwargs) }}">
+       {{text|safe}}
+    </a>
+{% endmacro %}
+
+{% macro render_messages(messages=None, default_category='error',tsf={"message":"error","success":"success"}) -%}
+   
+    {% with messages = messages or get_flashed_messages(with_categories=True) -%}
+	    {% if messages -%} 
+	    	{# don't output anything if there are no messages #}
+		    {% for cat, msg in messages %}
+		        {# <div class="ui {{ transform.get(cat.lower(), cat or default_category) }} message">
+		  			<i class="close icon"></i>
+		  				<div class="header">
+		           			{{ msg }}
+		         		</div>
+		        </div> #}
+				<script>
+					swal("提示","{{msg}}","{{  tsf.get(cat) or default_category }}");
+				</script>
+		    {%- endfor -%}
+	    {% endif -%}
+    {% endwith -%}
+{% endmacro -%}
