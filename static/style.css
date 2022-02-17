@@ -3,7 +3,7 @@
     src: url(./poem.ttf);
 }
 .poem{
-    font-family: poem;
+    font-family: poem, KaiTi;
 }
 .now_char{
     color:rgb(220, 0, 0);
