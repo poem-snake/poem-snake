@@ -16,6 +16,7 @@ from wtforms.validators import DataRequired, EqualTo, Length
 from wtforms import SubmitField, StringField, PasswordField
 from flask_wtf import FlaskForm
 from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, current_app
+import time
 
 
 load_dotenv(path.join(path.abspath(path.dirname(__file__)), '.env'))
@@ -214,6 +215,8 @@ def round_start():
     round = current_app.round
     if round.number == len(game.cleared_text()) - 1:
         emit("game_end", {'message': "游戏结束"}, broadcast=True)
+        time.sleep(5)
+        game_start()
         return
     else:
         roundnew = GameRound()
