@@ -187,7 +187,6 @@ def game_start():
     game.author = author
     db.session.add(game)
     db.session.commit()
-    current_app.__add__
     current_app.game = game
     round = GameRound()
     round.text = game.text[0]
@@ -239,6 +238,7 @@ def answer(text):
         r.user = current_user
         db.session.add(r)
         db.session.commit()
+        round_start()
         emit('answer_check', {'message': '提交成功', 'data': json.dumps({
              'title': check[0], 'author': check[1]})})
         emit('record_add', {'message': '已有人答出', 'data': json.dumps({
