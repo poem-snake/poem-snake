@@ -165,7 +165,8 @@ def logout():
 
 @socket_io.on('connect')
 def connect():
-    game_start()
+    if not hasattr(app,'game'):
+        game_start()
     emit('connect_massage', {'message': 'Connected', 'current_game_content':
                              json.dumps(current_app.game.info()), "current_round": json.dumps(current_app.round.info())})
 
