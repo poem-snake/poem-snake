@@ -1,3 +1,5 @@
+import eventlet
+eventlet.monkey_patch()
 from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, current_app
 from flask_wtf import FlaskForm
 from wtforms import SubmitField, StringField, PasswordField
@@ -13,8 +15,6 @@ from flask_moment import Moment
 from flask_socketio import SocketIO, emit
 import datetime
 import json
-import eventlet
-eventlet.monkey_patch()
 
 load_dotenv(path.join(path.abspath(path.dirname(__file__)), '.env'))
 app = Flask(__name__)
