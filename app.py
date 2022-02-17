@@ -81,6 +81,9 @@ class Game (db.Model):
     def info(self):
         return {'text': self.text, 'title': self.title, 'author': self.author}
 
+    def cleared_text(self):
+        return clear_mark(self.text)
+
 
 class GameRound (db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -91,7 +94,7 @@ class GameRound (db.Model):
     number = db.Column(db.Integer)
 
     def get_character(self):
-        return self.game.text[self.number]
+        return self.game.cleared_text()[self.number]
 
     def info(self):
         return {'text': self.get_character(), 'number': self.number}
@@ -183,14 +186,14 @@ def clear_mark(string):
 def game_start():
     content, origin, author = api.get_poem()
     game = Game()
-    game.text = clear_mark(content)
+    game.text = content
     game.title = origin
     game.author = author
     db.session.add(game)
     db.session.commit()
     current_app.game = game
     round = GameRound()
-    round.text = game.text[0]
+    round.text = game.cleared_text()[0]
     round.number = 0
     round.game = game
     db.session.add(round)
@@ -203,12 +206,12 @@ def game_start():
 def round_start():
     game = current_app.game
     round = current_app.round
-    if round.number == len(game.text) - 1:
+    if round.number == len(game.cleared_text()) - 1:
         emit("game_end", {'message': "游戏结束"}, broadcast=True)
         return
     else:
         roundnew = GameRound()
-        roundnew.text = game.text[round.number+1]
+        roundnew.text = game.cleared_text()[round.number+1]
         roundnew.number = round.number+1
         roundnew.game = game
         db.session.add(roundnew)
