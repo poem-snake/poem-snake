@@ -25,5 +25,14 @@ def search_poem (string):
     author,title = data.find_all('a')[1].text.split('《')
     return title[:-1],author#,line
 
+def get_poem ():
+    r=requests.get('https://v1.jinrishici.com/all.json')
+    data=r.json()
+    content=data['content']
+    origin=data['origin']
+    author=data['author']
+    return content,origin,author
+
 if __name__ == '__main__':
     print(search_poem(input()))
+    print (get_poem())
