@@ -66,7 +66,8 @@ class Record (db.Model):
     user = db.relationship(
         'User', backref=db.backref('Record', lazy='dynamic'))
     time = db.Column(db.DateTime, default=datetime.datetime.utcnow)
-    game = db.relationship('Game')
+    game_id = db.Column(db.Integer, db.ForeignKey('game.id'))
+    game=db.relationship('Game', backref=db.backref('Record', lazy='dynamic'))
 
 
 class Game (db.Model):
@@ -74,9 +75,7 @@ class Game (db.Model):
     text = db.Column(db.String(100))
     title = db.Column(db.String(100))
     author = db.Column(db.String(100))
-    record_id = db.Column(db.Integer, db.ForeignKey('record.id'))
-    record = db.relationship(
-        'Record', backref=db.backref('Game', lazy='dynamic'))
+    records=db.relationship('Record')
 
     def info(self):
         return {'text': self.text, 'title': self.title, 'author': self.author}
@@ -92,12 +91,13 @@ class GameRound (db.Model):
     game = db.relationship(
         'Game', backref=db.backref('GameRound', lazy='dynamic'))
     number = db.Column(db.Integer)
+    real_number = db.Column(db.Integer)
 
     def get_character(self):
         return self.game.cleared_text()[self.number]
 
     def info(self):
-        return {'text': self.get_character(), 'number': self.number}
+        return {'text': self.get_character(), 'number': self.number,'real_number': self.real_number}
 
 
 @login_manager.user_loader
@@ -195,6 +195,7 @@ def game_start():
     round = GameRound()
     round.text = game.cleared_text()[0]
     round.number = 0
+    round.real_number = 0
     round.game = game
     db.session.add(round)
     db.session.commit()
@@ -213,6 +214,10 @@ def round_start():
         roundnew = GameRound()
         roundnew.text = game.cleared_text()[round.number+1]
         roundnew.number = round.number+1
+        if game.text[roundnew.real_number+1] == ',':
+            roundnew.real_number = roundnew.real_number+2
+        else:
+            roundnew.real_number = roundnew.real_number+1
         roundnew.game = game
         db.session.add(roundnew)
         db.session.commit()
