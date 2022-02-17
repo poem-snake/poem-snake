@@ -1,20 +1,21 @@
 import eventlet
 eventlet.monkey_patch()
-from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, current_app
-from flask_wtf import FlaskForm
-from wtforms import SubmitField, StringField, PasswordField
-from wtforms.validators import DataRequired, EqualTo, Length
-from flask_sqlalchemy import SQLAlchemy
-import api
-from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
-from os import environ, path
-from dotenv import load_dotenv
-from flask_migrate import Migrate
-from werkzeug.security import generate_password_hash, check_password_hash
-from flask_moment import Moment
-from flask_socketio import SocketIO, emit
-import datetime
 import json
+import datetime
+from flask_socketio import SocketIO, emit
+from flask_moment import Moment
+from werkzeug.security import generate_password_hash, check_password_hash
+from flask_migrate import Migrate
+from dotenv import load_dotenv
+from os import environ, path
+from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
+import api
+from flask_sqlalchemy import SQLAlchemy
+from wtforms.validators import DataRequired, EqualTo, Length
+from wtforms import SubmitField, StringField, PasswordField
+from flask_wtf import FlaskForm
+from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, current_app
+
 
 load_dotenv(path.join(path.abspath(path.dirname(__file__)), '.env'))
 app = Flask(__name__)
@@ -221,7 +222,7 @@ def round_start():
 @login_required
 def answer(text):
     r = Record()
-    if len(text) <= 7 or len(text) >= 20:
+    if len(text) <= 7 or len(text) >= 24:
         emit('answer_check', {'message': '长度不符合要求'})
         return
     w = text.find("（）")
@@ -241,7 +242,9 @@ def answer(text):
         emit('answer_check', {'message': '提交成功', 'data': json.dumps({
              'title': check[0], 'author': check[1]})})
         emit('record_add', {'message': '已有人答出', 'data': json.dumps({
-             'title': check[0], 'author': check[1], 'text': text})}, broadcast=True)
+             'title': check[0], 'author': check[1], 'text': text, 'user_id': current_user.id})}, broadcast=True)
+    else:
+        emit('answer_check', {'message': '没有找到'})
 
 
 if __name__ == '__main__':
