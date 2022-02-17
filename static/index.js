@@ -24,3 +24,18 @@ socket.on('game_end',function(){
     $('#title').html('');
     $('#author').html('');
 })
+
+socket.on('round_start',function(data){
+    data=JSON.parse(data.data);
+    let char = $("#problem_now").text();
+    $("#problem_now").html(char);
+    let origin = $("#problem").text();
+    $("#problem").html(origin.slice(data.real_number)+`<span class="now_char" style="font-size:42px;">`+data.text+`</span>`+origin.slice(data.real_number+2)); 
+});
+
+$(document).ready(function(){
+    $('sumbit').click(function(){
+        let answer=$('#answer').val();
+        socket.emit('answer',{'text':answer});
+    });
+});
