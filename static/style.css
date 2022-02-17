@@ -1,0 +1,11 @@
+@font-face {
+    font-family: poem;
+    src: url(./poem.ttf);
+}
+.poem{
+    font-family: poem;
+}
+.now_char{
+    color:rgb(220, 0, 0);
+    background-color: #e5e5e575;
+}
