@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
+from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, current_app
 from flask_wtf import FlaskForm
 from wtforms import SubmitField, StringField, PasswordField
 from wtforms.validators import DataRequired, EqualTo, Length
@@ -10,7 +10,11 @@ from dotenv import load_dotenv
 from flask_migrate import Migrate
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_moment import Moment
+from flask_socketio import SocketIO, emit
 import datetime
+import json
+import eventlet
+eventlet.monkey_patch()
 
 load_dotenv(path.join(path.abspath(path.dirname(__file__)), '.env'))
 app = Flask(__name__)
@@ -32,6 +36,8 @@ migrate = Migrate(app, db)
 moment = Moment(app)
 login_manager = LoginManager()
 login_manager.init_app(app)
+login_manager.login_view = 'login'
+socket_io = SocketIO(app)
 
 
 class User(UserMixin, db.Model):
@@ -64,10 +70,30 @@ class Record (db.Model):
 
 class Game (db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    text = db.Column(db.String(100), default='苟利国家生死以岂因祸福避趋之')
+    text = db.Column(db.String(100))
+    title = db.Column(db.String(100))
+    author = db.Column(db.String(100))
     record_id = db.Column(db.Integer, db.ForeignKey('record.id'))
     record = db.relationship(
         'Record', backref=db.backref('Game', lazy='dynamic'))
+
+    def info(self):
+        return {'text': self.text, 'title': self.title, 'author': self.author}
+
+
+class GameRound (db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    # text = db.Column(db.String(5))
+    game_id = db.Column(db.Integer, db.ForeignKey('game.id'))
+    game = db.relationship(
+        'Game', backref=db.backref('GameRound', lazy='dynamic'))
+    number = db.Column(db.Integer)
+
+    def get_character(self):
+        return self.game.text[self.number]
+
+    def info(self):
+        return {'text': self.get_character(), 'number': self.number}
 
 
 @login_manager.user_loader
@@ -134,3 +160,89 @@ def login():
 def logout():
     logout_user()
     return redirect(url_for('main'))
+
+
+@socket_io.on('connect')
+def connect():
+    game_start()
+    emit('connect_massage', {'message': 'Connected', 'current_game_content':
+                             json.dumps(current_app.game.info()), "current_round": json.dumps(current_app.round.info())})
+
+
+@socket_io.on('disconnect')
+def disconnect():
+    pass
+
+
+def clear_mark(string):
+    return string.replace("，", "").replace("；", "").replace("。", "").replace("！", "").replace("？", "")
+
+
+def game_start():
+    content, origin, author = api.get_poem()
+    game = Game()
+    game.text = clear_mark(content)
+    game.title = origin
+    game.author = author
+    db.session.add(game)
+    db.session.commit()
+    current_app.__add__
+    current_app.game = game
+    round = GameRound()
+    round.text = game.text[0]
+    round.number = 0
+    round.game = game
+    db.session.add(round)
+    db.session.commit()
+    current_app.round = round
+    emit("game_start", {'message': "新游戏开始",
+         'data': json.dumps(game.info())}, broadcast=True)
+
+
+def round_start():
+    game = current_app.game
+    round = current_app.round
+    if round.number == len(game.text) - 1:
+        emit("game_end", {'message': "游戏结束"}, broadcast=True)
+        return
+    else:
+        roundnew = GameRound()
+        roundnew.text = game.text[round.number+1]
+        roundnew.number = round.number+1
+        roundnew.game = game
+        db.session.add(roundnew)
+        db.session.commit()
+        current_app.round = roundnew
+        emit("round_start", {'message': "新回合开始", 'data': json.dumps(
+            roundnew.info())}, broadcast=True)
+
+
+@socket_io.on('answer')
+@login_required
+def answer(text):
+    r = Record()
+    if len(text) <= 7 or len(text) >= 20:
+        emit('answer_check', {'message': '长度不符合要求'})
+        return
+    w = text.find("（）")
+    if w == -1:
+        emit('answer_check', {'message': '没有找到括号'})
+        return
+    char = current_app.round.get_character()
+    text = text[:w]+char+text[w+2]
+    check = api.search_poem(text)
+    if check:
+        r.line = text
+        r.title = check[0]
+        r.author = check[1]
+        r.user = current_user
+        db.session.add(r)
+        db.session.commit()
+        emit('answer_check', {'message': '提交成功', 'data': json.dumps({
+             'title': check[0], 'author': check[1]})})
+        emit('record_add', {'message': '已有人答出', 'data': json.dumps({
+             'title': check[0], 'author': check[1], 'text': text})}, broadcast=True)
+
+
+if __name__ == '__main__':
+    socket_io.run(app)
