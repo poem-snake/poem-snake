@@ -1,4 +1,5 @@
 import eventlet
+from sqlalchemy import desc
 eventlet.monkey_patch()
 import json
 import datetime
@@ -168,8 +169,12 @@ def logout():
 
 @socket_io.on('connect')
 def connect():
-    if not hasattr(app,'game'):
-        game_start()
+    if not hasattr(current_app,'game'):
+        if Game.query.count() == 0:
+            game_start()
+        else:
+            current_app.game = Game.query.order_by(desc(Game.id)).first()
+            current_app.round = GameRound.query.filter_by(game_id=current_app.game.id).order_by(desc(GameRound.number)).first()
     emit('connect_massage', {'message': 'Connected', 'current_game_content':
                              json.dumps(current_app.game.info()), "current_round": json.dumps(current_app.round.info())})
 
