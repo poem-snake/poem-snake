@@ -135,6 +135,7 @@ function load_more() {
 }
 
 $(document).ready(function () {
+    load_more();
     $('#submit').click(function () {
         let answer = $('#answer').val();
         console.log(answer);
