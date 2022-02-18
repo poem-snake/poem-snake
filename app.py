@@ -224,7 +224,7 @@ def round_start():
         roundnew = GameRound()
         roundnew.text = game.cleared_text()[round.number+1]
         roundnew.number = round.number+1
-        if game.text[round.real_number+1] == ',' or game.text[round.real_number+1] == '？' or game.text[round.real_number+1] == '。' or game.text[round.real_number+1]=='！':
+        if game.text[round.real_number+1] == ',' or game.text[round.real_number+1] == '？' or game.text[round.real_number+1] == '。' or game.text[round.real_number+1] == '！':
             roundnew.real_number = round.real_number+2
         else:
             roundnew.real_number = round.real_number+1
@@ -239,7 +239,7 @@ def round_start():
 @socket_io.on('answer')
 @login_required
 def answer(data):
-    text=data['data']
+    text = data['data']
     r = Record()
     if len(text) <= 7 or len(text) >= 24:
         emit('answer_check', {'message': '长度不符合要求'})

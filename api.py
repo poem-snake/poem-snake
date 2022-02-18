@@ -1,8 +1,9 @@
 import requests
 from bs4 import BeautifulSoup
 
-def reserve_search_poem (string):
-    url='https://so.gushiwen.cn/search.aspx?value={}'.format(string)
+
+def reserve_search_poem(string):
+    url = 'https://so.gushiwen.cn/search.aspx?value={}'.format(string)
     r = requests.get(url)
     soup = BeautifulSoup(r.text, 'html.parser')
     data = soup.find('div', class_='sons')
@@ -12,7 +13,8 @@ def reserve_search_poem (string):
         return None
     title = data.find('p').text.replace('\n', '')
     author = data.find('p', class_='source').text.replace('\n', '')
-    return title,author
+    return title, author
+
 
 def search_poem(string):
     # url='http://www.esk365.com/sccx/scso.php?wd={}'.format(string)
