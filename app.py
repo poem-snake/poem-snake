@@ -40,7 +40,7 @@ moment = Moment(app)
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'login'
-socket_io = SocketIO(app)
+socket_io = SocketIO(app,logger=True, engineio_logger=True)
 
 
 class User(UserMixin, db.Model):
@@ -224,10 +224,10 @@ def round_start():
         roundnew = GameRound()
         roundnew.text = game.cleared_text()[round.number+1]
         roundnew.number = round.number+1
-        if game.text[roundnew.real_number+1] == ',':
-            roundnew.real_number = roundnew.real_number+2
+        if game.text[round.real_number+1] == ',' or game.text[round.real_number+1] == '？' or game.text[round.real_number+1] == '。' or game.text[round.real_number+1]=='！':
+            roundnew.real_number = round.real_number+2
         else:
-            roundnew.real_number = roundnew.real_number+1
+            roundnew.real_number = round.real_number+1
         roundnew.game = game
         db.session.add(roundnew)
         db.session.commit()
@@ -238,7 +238,8 @@ def round_start():
 
 @socket_io.on('answer')
 @login_required
-def answer(text):
+def answer(data):
+    text=data['data']
     r = Record()
     if len(text) <= 7 or len(text) >= 24:
         emit('answer_check', {'message': '长度不符合要求'})
@@ -257,7 +258,7 @@ def answer(text):
         r.user = current_user
         db.session.add(r)
         db.session.commit()
-        round_start()
+        # round_start()
         emit('answer_check', {'message': '提交成功', 'data': json.dumps({
              'title': check[0], 'author': check[1]})})
         emit('record_add', {'message': '已有人答出', 'data': json.dumps({
