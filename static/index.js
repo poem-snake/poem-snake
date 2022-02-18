@@ -87,10 +87,39 @@ socket.on('record_add', function (data) {
     }, 3000);
 });
 
+var last = 10000000000;
+
+function load_more() {
+    $.get(`/api/history?last=${last}`, function (data) {
+        console.log(data);
+        for (let i = 0; i < data.length; i++) {
+            let record = data[i];
+            $("#history").append(`<div class="event">
+            <div class="label">
+                <img src="https://cdn.luogu.com.cn/upload/usericon/128235.png">
+            </div>
+            <div class="content">
+                <div class="summary">
+                    <a class="user">${record.username}</a> 进行了回答
+                    <div class="date">${moment(record.time).fromnow()} </div>
+                </div>
+                <div class="extra text">
+                    <p class="poem" style="font-size: 24px;">
+                        ${record.line}
+                    </p>
+                </div>
+            </div>
+        </div>`)
+            last = data[data.length - 1].id;
+        }
+    });
+}
+
 $(document).ready(function () {
     $('#submit').click(function () {
         let answer = $('#answer').val();
         console.log(answer);
         socket.emit('answer', { data: answer });
     });
+    $('#load_more').click(load_more);
 });
