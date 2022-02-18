@@ -8,6 +8,8 @@ def reserve_search_poem(string):
     soup = BeautifulSoup(r.text, 'html.parser')
     data = soup.find('div', class_='sons')
     text = data.find('div', class_='contson')
+    if not text:
+        return None
     line = text.find('span').text
     if line != string:
         return None

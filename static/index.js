@@ -75,8 +75,26 @@ socket.on('record_add', function (data) {
     data = JSON.parse(data.data);
     title = data.title;
     author = data.author;
-    text = data.text;
+    text = data.line;
     username = data.username;
+    let record = data;
+    $("#history").prepend(`<div class="event">
+            <div class="label">
+                <img src="${record.gravatar}">
+            </div>
+            <div class="content">
+                <div class="summary">
+                    <a class="user">${record.username}</a> 进行了回答
+                    <div class="date">${moment(record.time).fromNow()} </div>
+                </div>
+                <div class="extra text">
+                    <p>
+                       <span class="poem" style="font-size: 24px;"> ${record.line}</span>
+                       ——<span style="font-size: 18px; font-family: Kaiti;">${record.author}《${record.title}》</span>
+                    </p>
+                </div>
+            </div>
+        </div>`)
     origin = $("#problem_segment").html();
     $('#problem_head').text(`已被${username}答出`);
     $('#problem').text(text);
@@ -96,16 +114,17 @@ function load_more() {
             let record = data[i];
             $("#history").append(`<div class="event">
             <div class="label">
-                <img src="https://cdn.luogu.com.cn/upload/usericon/128235.png">
+                <img src="${record.gravatar}">
             </div>
             <div class="content">
                 <div class="summary">
                     <a class="user">${record.username}</a> 进行了回答
-                    <div class="date">${moment(record.time).fromnow()} </div>
+                    <div class="date">${moment(record.time).fromNow()} </div>
                 </div>
                 <div class="extra text">
-                    <p class="poem" style="font-size: 24px;">
-                        ${record.line}
+                    <p>
+                       <span class="poem" style="font-size: 24px;"> ${record.line}</span>
+                       ——<span style="font-size: 18px; font-family: Kaiti;">${record.author}《${record.title}》</span>
                     </p>
                 </div>
             </div>

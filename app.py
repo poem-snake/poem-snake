@@ -17,6 +17,7 @@ from wtforms import SubmitField, StringField, PasswordField
 from flask_wtf import FlaskForm
 from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, current_app
 import time
+from libgravatar import Gravatar
 
 
 load_dotenv(path.join(path.abspath(path.dirname(__file__)), '.env'))
@@ -48,6 +49,7 @@ class User(UserMixin, db.Model):
     username = db.Column(db.String(20), unique=True)
     password = db.Column(db.String(20))
     admin = db.Column(db.Boolean, default=False)
+    email = db.Column(db.String(50), unique=True)
 
     def __repr__(self):
         return '<User %r>' % self.username
@@ -71,9 +73,9 @@ class Record (db.Model):
     game_id = db.Column(db.Integer, db.ForeignKey('game.id'))
     game = db.relationship(
         'Game', backref=db.backref('Record', lazy='dynamic'))
-    # gameround_id = db.Column(db.Integer, db.ForeignKey('gameround.id'))
-    # gameround = db.relationship(
-    #     'GameRound', backref=db.backref('Record', lazy='dynamic'))
+    gameround_id = db.Column(db.Integer, db.ForeignKey('game_round.id'))
+    gameround = db.relationship(
+         'GameRound', backref=db.backref('Record', lazy='dynamic'))
 
     def info (self):
         return {
@@ -81,9 +83,10 @@ class Record (db.Model):
             'line': self.line,
             'title': self.title,
             'author': self.author,
-            'user_id': self.user_id,
-            'time': self.time,
+            'gravatar': Gravatar(self.user.email).get_image(default='identicon'),
+            'time': str(self.time),
             'username' : self.user.username,
+            'round': self.gameround.info(),
         }
 
 
@@ -137,6 +140,7 @@ def register():
                                  DataRequired(), Length(1, 128)])
         password_check = PasswordField('Password_check', validators=[
                                        DataRequired(), Length(1, 128), EqualTo("password")])
+        email = StringField ('Email', validators=[DataRequired(), Length(1, 50)])
         submit = SubmitField('Register')
     form = RegisterForm()
     if form.validate_on_submit():
@@ -146,6 +150,7 @@ def register():
             return redirect(url_for('register'))
         user = User(username=form.username.data)
         user.set_password(form.password.data)
+        user.email = form.email.data
         db.session.add(user)
         db.session.commit()
         flash('Register successfully.', 'success')
@@ -273,13 +278,14 @@ def answer(data):
         r.title = check[0]
         r.author = check[1]
         r.user = current_user
+        r.game = current_app.game
+        r.gameround = current_app.round
         db.session.add(r)
         db.session.commit()
         # round_start()
         emit('answer_check', {'message': '提交成功', 'data': json.dumps({
              'title': check[0], 'author': check[1]})})
-        emit('record_add', {'message': '已有人答出', 'data': json.dumps({
-             'title': check[0], 'author': check[1], 'text': text, 'user_id': current_user.id, 'username': current_user.username})}, broadcast=True)
+        emit('record_add', {'message': '已有人答出', 'data': json.dumps(r.info())}, broadcast=True)
         time.sleep(5)
         round_start()
     else:
