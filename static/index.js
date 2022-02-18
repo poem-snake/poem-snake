@@ -52,6 +52,7 @@ socket.on("connect_message", function (data) {
 
 socket.on('answer_check', function (data) {
     mes = data.message;
+    $('#submit').removeClass('ui loading disabled primary button').addClass('ui primary button');
     if (mes != "提交成功") {
         $("#answer").parent().removeClass("ui input").addClass("ui error disabled input");
         $("#answer").val(mes);
@@ -137,6 +138,7 @@ function load_more() {
 $(document).ready(function () {
     load_more();
     $('#submit').click(function () {
+        $('#submit').removeClass("ui primary button").addClass("ui loading disabled primary button");
         let answer = $('#answer').val();
         console.log(answer);
         socket.emit('answer', { data: answer });
