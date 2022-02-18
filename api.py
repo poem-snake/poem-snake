@@ -1,6 +1,18 @@
 import requests
 from bs4 import BeautifulSoup
 
+def reserve_search_poem (string):
+    url='https://so.gushiwen.cn/search.aspx?value={}'.format(string)
+    r = requests.get(url)
+    soup = BeautifulSoup(r.text, 'html.parser')
+    data = soup.find('div', class_='sons')
+    text = data.find('div', class_='contson')
+    line = text.find('span').text
+    if line != string:
+        return None
+    title = data.find('p').text.replace('\n', '')
+    author = data.find('p', class_='source').text.replace('\n', '')
+    return title,author
 
 def search_poem(string):
     # url='http://www.esk365.com/sccx/scso.php?wd={}'.format(string)
@@ -17,7 +29,7 @@ def search_poem(string):
     soup = BeautifulSoup(r.text, 'html.parser')
     data = soup.find('div', class_='sons')
     if not data:
-        return None
+        return reserve_search_poem(string)
     # print (data)
     line = data.find('span')
     # print (data)
