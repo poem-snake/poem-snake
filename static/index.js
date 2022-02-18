@@ -34,7 +34,7 @@ socket.on('round_start',function(data){
 });
 
 $(document).ready(function(){
-    $('sumbit').click(function(){
+    $('#sumbit').click(function(){
         let answer=$('#answer').val();
         socket.emit('answer',{'text':answer});
     });
