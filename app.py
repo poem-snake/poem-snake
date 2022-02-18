@@ -298,7 +298,7 @@ def test():
          'round': json.dumps(current_app.round.info())})
 
 @app.route('/api/history')
-@login_required
+# @login_required
 def history():
     last=request.args.get('last', 19260817, type=int)
     records = Record.query.filter(Record.id<last).order_by(desc(Record.id)).limit(10).all()
