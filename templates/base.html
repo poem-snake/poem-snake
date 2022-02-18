@@ -26,9 +26,14 @@
     <div class="ui fixed borderless menu" style="height: 50px;">
         <div class="ui container">
             <a class="header item" href="{{url_for("main")}}">
-                诗词填空接龙
+                诗词（）谜
             </a>
             {{ render_nav_item('main', '<i class="home icon"> </i> 主页') }}
+            <div class="right menu">
+                {{ render_nav_item('register', '注册') }}
+                {{ render_nav_item('login', '登入') }}
+                {{ render_nav_item('logout', '登出') }}
+            </div>
         </div>
     </div>
     <div class="ui container" style="margin-top: 55px; ">
