@@ -52,7 +52,23 @@ socket.on("connect_message", function (data) {
 
 socket.on('answer_check', function (data) {
     mes = data.message;
-    console.log(mes);
+    if (mes != "提交成功") {
+        $("#answer").parent().removeClass("ui input").addClass("ui error disabled input");
+        $("#answer").val(mes);
+        setTimeout(function () {
+            $("#answer").parent().removeClass("ui error disabled input").addClass("ui input");
+            $("#answer").val("");
+        }, 2000);
+    }
+    else {
+        $("#answer").parent().removeClass("ui input").addClass("uidisabled input");
+        console.log("test success");
+        $("#answer").val(mes);
+        setTimeout(function () {
+            $("#answer").parent().removeClass("ui disabled input").addClass("ui input");
+            $("#answer").val("");
+        }, 3000);
+    }
 });
 
 $(document).ready(function () {

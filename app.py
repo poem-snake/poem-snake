@@ -263,10 +263,10 @@ def answer(data):
              'title': check[0], 'author': check[1]})})
         emit('record_add', {'message': '已有人答出', 'data': json.dumps({
              'title': check[0], 'author': check[1], 'text': text, 'user_id': current_user.id})}, broadcast=True)
-        time.sleep(2)
+        time.sleep(5)
         round_start()
     else:
-        emit('answer_check', {'message': '没有找到'})
+        emit('answer_check', {'message': '没有找到这句诗'})
 
 
 @socket_io.on('test')
