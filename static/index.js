@@ -71,6 +71,22 @@ socket.on('answer_check', function (data) {
     }
 });
 
+socket.on('record_add', function (data) {
+    data = JSON.parse(data.data);
+    title = data.title;
+    author = data.author;
+    text = data.text;
+    username = data.username;
+    origin = $("#problem_segment").html();
+    $('#problem_head').text(`已被${username}答出`);
+    $('#problem').text(text);
+    $('#title').text(`《${title}》`);
+    $('#author').text(author);
+    setTimeout(function () {
+        $('#problem_segment').html(origin);
+    }, 3000);
+});
+
 $(document).ready(function () {
     $('#submit').click(function () {
         let answer = $('#answer').val();
