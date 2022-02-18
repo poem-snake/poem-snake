@@ -26,7 +26,7 @@ app.secret_key = environ.get('sk')
 
 DIALECT = 'mysql'
 DRIVER = 'pymysql'
-USERNAME = 'songhongyi'
+USERNAME = 'poem_snake'
 PASSWORD = environ.get('mysqlpassword')
 HOST = '127.0.0.1'
 PORT = '3306'
