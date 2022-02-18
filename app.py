@@ -178,7 +178,7 @@ def connect():
             current_app.game = Game.query.order_by(desc(Game.id)).first()
             current_app.round = GameRound.query.filter_by(
                 game_id=current_app.game.id).order_by(desc(GameRound.number)).first()
-    emit('connect_massage', {'message': 'Connected', 'current_game_content':
+    emit('connect_message', {'message': 'Connected', 'current_game_content':
                              json.dumps(current_app.game.info()), "current_round": json.dumps(current_app.round.info())})
 
 
