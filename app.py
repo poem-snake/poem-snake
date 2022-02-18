@@ -69,7 +69,8 @@ class Record (db.Model):
         'User', backref=db.backref('Record', lazy='dynamic'))
     time = db.Column(db.DateTime, default=datetime.datetime.utcnow)
     game_id = db.Column(db.Integer, db.ForeignKey('game.id'))
-    game=db.relationship('Game', backref=db.backref('Record', lazy='dynamic'))
+    game = db.relationship(
+        'Game', backref=db.backref('Record', lazy='dynamic'))
 
 
 class Game (db.Model):
@@ -77,7 +78,7 @@ class Game (db.Model):
     text = db.Column(db.String(100))
     title = db.Column(db.String(100))
     author = db.Column(db.String(100))
-    records=db.relationship('Record')
+    records = db.relationship('Record')
 
     def info(self):
         return {'text': self.text, 'title': self.title, 'author': self.author}
@@ -99,7 +100,7 @@ class GameRound (db.Model):
         return self.game.cleared_text()[self.number]
 
     def info(self):
-        return {'text': self.get_character(), 'number': self.number,'real_number': self.real_number}
+        return {'text': self.get_character(), 'number': self.number, 'real_number': self.real_number}
 
 
 @login_manager.user_loader
@@ -170,12 +171,13 @@ def logout():
 
 @socket_io.on('connect')
 def connect():
-    if not hasattr(current_app,'game'):
+    if not hasattr(current_app, 'game'):
         if Game.query.count() == 0:
             game_start()
         else:
             current_app.game = Game.query.order_by(desc(Game.id)).first()
-            current_app.round = GameRound.query.filter_by(game_id=current_app.game.id).order_by(desc(GameRound.number)).first()
+            current_app.round = GameRound.query.filter_by(
+                game_id=current_app.game.id).order_by(desc(GameRound.number)).first()
     emit('connect_massage', {'message': 'Connected', 'current_game_content':
                              json.dumps(current_app.game.info()), "current_round": json.dumps(current_app.round.info())})
 
@@ -265,9 +267,12 @@ def answer(text):
     else:
         emit('answer_check', {'message': '没有找到'})
 
+
 @socket_io.on('test')
 def test():
-    emit('test', {'game': json.dumps(current_app.game.info()), 'round': json.dumps(current_app.round.info())})
+    emit('test', {'game': json.dumps(current_app.game.info()),
+         'round': json.dumps(current_app.round.info())})
+
 
 if __name__ == '__main__':
     socket_io.run(app)
