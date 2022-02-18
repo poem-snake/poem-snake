@@ -71,6 +71,20 @@ class Record (db.Model):
     game_id = db.Column(db.Integer, db.ForeignKey('game.id'))
     game = db.relationship(
         'Game', backref=db.backref('Record', lazy='dynamic'))
+    # gameround_id = db.Column(db.Integer, db.ForeignKey('gameround.id'))
+    # gameround = db.relationship(
+    #     'GameRound', backref=db.backref('Record', lazy='dynamic'))
+
+    def info (self):
+        return {
+            'id': self.id,
+            'line': self.line,
+            'title': self.title,
+            'author': self.author,
+            'user_id': self.user_id,
+            'time': self.time,
+            'username' : self.user.username,
+        }
 
 
 class Game (db.Model):
@@ -224,7 +238,7 @@ def round_start():
         roundnew = GameRound()
         roundnew.text = game.cleared_text()[round.number+1]
         roundnew.number = round.number+1
-        if game.text[round.real_number+1] == ',' or game.text[round.real_number+1] == '？' or game.text[round.real_number+1] == '。' or game.text[round.real_number+1] == '！':
+        if game.text[round.real_number+1] == '，' or game.text[round.real_number+1] == '？' or game.text[round.real_number+1] == '。' or game.text[round.real_number+1] == '！':
             roundnew.real_number = round.real_number+2
         else:
             roundnew.real_number = round.real_number+1
@@ -249,7 +263,10 @@ def answer(data):
         emit('answer_check', {'message': '没有找到括号'})
         return
     char = current_app.round.get_character()
-    text = text[:w]+char+text[w+2]
+    text = text[:w]+char+text[w+2:]
+    if current_app.game.text.find(text) != -1:
+        emit('answer_check', {'message': '发原诗，卡 bug？'})
+        return
     check = api.search_poem(text)
     if check:
         r.line = text
@@ -262,7 +279,7 @@ def answer(data):
         emit('answer_check', {'message': '提交成功', 'data': json.dumps({
              'title': check[0], 'author': check[1]})})
         emit('record_add', {'message': '已有人答出', 'data': json.dumps({
-             'title': check[0], 'author': check[1], 'text': text, 'user_id': current_user.id})}, broadcast=True)
+             'title': check[0], 'author': check[1], 'text': text, 'user_id': current_user.id, 'username': current_user.username})}, broadcast=True)
         time.sleep(5)
         round_start()
     else:
@@ -274,6 +291,12 @@ def test():
     emit('test', {'game': json.dumps(current_app.game.info()),
          'round': json.dumps(current_app.round.info())})
 
+@app.route('/api/history')
+@login_required
+def history():
+    last=request.args.get('last', 19260817, type=int)
+    records = Record.query.filter(Record.id<last).order_by(desc(Record.id)).limit(10).all()
+    return jsonify([r.info() for r in records])
 
 if __name__ == '__main__':
     socket_io.run(app)
