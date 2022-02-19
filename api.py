@@ -31,13 +31,15 @@ def search_poem(string):
         string)
     r = requests.get(url)
     soup = BeautifulSoup(r.text, 'html.parser')
+    # print (soup)
     data = soup.find('div', class_='sons')
     if not data:
         return reserve_search_poem(string)
     # print (data)
-    line = data.find('span')
+    line = data.find('a')
     # print (data)
-    if (not line or line.text != string):
+    if (not line or line.text.find(string) == -1):
+        # print (line.text,string, line.text.find(string))
         return None
     # line=line.parent.text
     # print(data.find_all('a')[1].text)
