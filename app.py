@@ -35,7 +35,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = '{}+{}://{}:{}@{}:{}/{}?charset=utf8'.fo
     DIALECT, DRIVER, USERNAME, PASSWORD, HOST, PORT, DATABASE)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///'+app.root_path+'/data.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-db = SQLAlchemy(app)
+db = SQLAlchemy(app, session_options={"expire_on_commit": False})
 migrate = Migrate(app, db)
 moment = Moment(app)
 login_manager = LoginManager()
