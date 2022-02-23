@@ -60,6 +60,13 @@ class User(UserMixin, db.Model):
     def check_password(self, password):
         return check_password_hash(self.password, password)
 
+    def info(self):
+        return {
+            'id': self.id,
+            'username': self.username,
+            'gravatar': Gravatar(self.email).get_image(default='identicon')
+        }
+
 
 class Record (db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -119,6 +126,7 @@ class GameRound (db.Model):
     def info(self):
         return {'text': self.get_character(), 'number': self.number, 'real_number': self.real_number}
 
+users=[]
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -190,6 +198,8 @@ def logout():
 
 @socket_io.on('connect')
 def connect():
+    if current_user.is_authenticated:
+        users.append(current_user.id)
     if not hasattr(current_app, 'game'):
         if Game.query.count() == 0:
             game_start()
@@ -203,8 +213,12 @@ def connect():
 
 @socket_io.on('disconnect')
 def disconnect():
-    pass
+    if current_user.is_authenticated:
+        users.remove(current_user.id)
 
+@app.route('/api/users')
+def get_users():
+    return jsonify([User.query.filter_by(id=u).first().info() for u in users])
 
 def clear_mark(string):
     return string.replace("，", "").replace("；", "").replace("。", "").replace("！", "").replace("？", "")
