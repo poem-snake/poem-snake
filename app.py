@@ -274,7 +274,7 @@ def round_start():
 def answer(data):
     text = data['data']
     r = Record()
-    if len(text) <= 7 or len(text) >= 24:
+    if len(text) <= 10 or len(text) >= 30:
         emit('answer_check', {'message': '长度不符合要求'})
         return
     w = text.find("（）")
@@ -286,6 +286,8 @@ def answer(data):
     if current_app.game.text.find(text) != -1:
         emit('answer_check', {'message': '发原诗，卡 bug？'})
         return
+    if text[len(text)-1] != '。' and text[len(text)-2] != '？'and text[len(text)-2] != '！'and text[len(text)-2] != '；':
+        emit('answer_check', {'message': '末尾需要有标点符号'})
     check = api.search_poem(text)
     if check:
         r.line = text
