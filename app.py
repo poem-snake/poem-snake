@@ -221,7 +221,7 @@ def get_users():
     return jsonify([User.query.filter_by(id=u).first().info() for u in users])
 
 def clear_mark(string):
-    return string.replace("，", "").replace("；", "").replace("。", "").replace("！", "").replace("？", "")
+    return string.replace("，", "").replace("；", "").replace("。", "").replace("！", "").replace("？", "").replace("、","")
 
 
 def game_start():
@@ -257,7 +257,7 @@ def round_start():
         roundnew = GameRound()
         roundnew.text = game.cleared_text()[round.number+1]
         roundnew.number = round.number+1
-        if game.text[round.real_number+1] == '，' or game.text[round.real_number+1] == '？' or game.text[round.real_number+1] == '。' or game.text[round.real_number+1] == '！':
+        if game.text[round.real_number+1] == '，' or game.text[round.real_number+1] == '？' or game.text[round.real_number+1] == '。' or game.text[round.real_number+1] == '！'or game.text[round.real_number+1] == '。' or game.text[round.real_number+1] == '，':
             roundnew.real_number = round.real_number+2
         else:
             roundnew.real_number = round.real_number+1
@@ -286,7 +286,7 @@ def answer(data):
     if current_app.game.text.find(text) != -1:
         emit('answer_check', {'message': '发原诗，卡 bug？'})
         return
-    if text[len(text)-1] != '。' and text[len(text)-2] != '？'and text[len(text)-2] != '！'and text[len(text)-2] != '；':
+    if text[len(text)-1] != '。' and text[len(text)-1] != '？'and text[len(text)-1] != '！'and text[len(text)-1] != '；':
         emit('answer_check', {'message': '末尾需要有标点符号'})
         return
     check = api.search_poem(text)
