@@ -288,6 +288,7 @@ def answer(data):
         return
     if text[len(text)-1] != '。' and text[len(text)-2] != '？'and text[len(text)-2] != '！'and text[len(text)-2] != '；':
         emit('answer_check', {'message': '末尾需要有标点符号'})
+        return
     check = api.search_poem(text)
     if check:
         r.line = text
