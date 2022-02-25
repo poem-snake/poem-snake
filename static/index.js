@@ -143,5 +143,10 @@ $(document).ready(function () {
         console.log(answer);
         socket.emit('answer', { data: answer });
     });
+    $('#answer').keydown(function (e) {
+        if (e.keyCode == 13 && e.ctrlKey) {
+            $('#submit').click();
+        }
+    });
     $('#load_more').click(load_more);
 });
