@@ -291,9 +291,9 @@ def answer(data):
         return
     try:
         check = api.search_poem(text)
-        return
     except Exception as e:
         emit("answer_check", {'message': '出错了，大概率找不到这句诗'})
+        return
     if check:
         r.line = text
         r.title = check[0]
