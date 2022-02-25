@@ -1,5 +1,5 @@
 import eventlet
-from sqlalchemy import desc
+from sqlalchemy import desc,func
 eventlet.monkey_patch()
 import json
 import datetime
@@ -323,6 +323,14 @@ def history():
     last=request.args.get('last', 19260817, type=int)
     records = Record.query.filter(Record.id<last).order_by(desc(Record.id)).limit(10).all()
     return jsonify([r.info() for r in records])
+
+@app.route('/api/ranklist')
+def ranklist():
+    perpage=request.args.get('perpage', 10, type=int)
+    page=request.args.get('page', 1, type=int)
+    users=User.query.join(Record, Record.user_id==User.id).with_entities(User.id, User.username, func.count(Record.id)).group_by(User.id).order_by(desc(func.count(Record.id))).paginate(page, perpage, False)
+    first=(page-1)*perpage+1
+    return jsonify({'page':page,"perpage":perpage,'data':[{"num":first+idx,"uid":u[0],"username":u[1],'count':u[2]} for idx,u in enumerate(users.items)]})
 
 if __name__ == '__main__':
     socket_io.run(app)
