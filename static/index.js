@@ -86,7 +86,7 @@ socket.on('record_add', function (data) {
             <div class="content">
                 <div class="summary">
                     <a class="user">${record.username}</a> 进行了回答
-                    <div class="date">${moment.utc(record.time).fromNow()} </div>
+                    <div class="date" data="${moment.utc(record.time)}">${moment.utc(record.time).fromNow()} </div>
                 </div>
                 <div class="extra text">
                     <p>
@@ -120,7 +120,7 @@ function load_more() {
             <div class="content">
                 <div class="summary">
                     <a class="user">${record.username}</a> 进行了回答
-                    <div class="date">${moment.utc(record.time).fromNow()} </div>
+                    <div class="date" data="${moment.utc(record.time)}">${moment.utc(record.time).fromNow()} </div>
                 </div>
                 <div class="extra text">
                     <p>
@@ -137,6 +137,12 @@ function load_more() {
 
 $(document).ready(function () {
     load_more();
+    setInterval(function () {
+        $("#history .date").each(function () {
+            let time = $(this).attr('data');
+            $(this).text(moment.utc(time).fromNow());
+        });
+    }, 10000);
     $('#submit').click(function () {
         $('#submit').removeClass("ui primary button").addClass("ui loading disabled primary button");
         let answer = $('#answer').val();
