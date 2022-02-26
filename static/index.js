@@ -86,7 +86,7 @@ socket.on('record_add', function (data) {
             <div class="content">
                 <div class="summary">
                     <a class="user">${record.username}</a> 进行了回答
-                    <div class="date" data="${moment.utc(record.time)}">${moment.utc(record.time).fromNow()} </div>
+                    <div class="date" data="${record.time}">${moment.utc(record.time).fromNow()} </div>
                 </div>
                 <div class="extra text">
                     <p>
@@ -120,7 +120,7 @@ function load_more() {
             <div class="content">
                 <div class="summary">
                     <a class="user">${record.username}</a> 进行了回答
-                    <div class="date" data="${moment.utc(record.time)}">${moment.utc(record.time).fromNow()} </div>
+                    <div class="date" data="${record.time}">${moment.utc(record.time).fromNow()} </div>
                 </div>
                 <div class="extra text">
                     <p>
