@@ -64,7 +64,7 @@ class User(UserMixin, db.Model):
         return {
             'id': self.id,
             'username': self.username,
-            'gravatar': Gravatar(self.email).get_image(default='identicon')
+            'gravatar': Gravatar(self.email).get_image(default='identicon').replace('www.gravatar.com','gravatar.w3tt.com')
         }
 
 
@@ -90,7 +90,7 @@ class Record (db.Model):
             'line': self.line,
             'title': self.title,
             'author': self.author,
-            'gravatar': Gravatar(self.user.email).get_image(default='identicon'),
+            'gravatar': Gravatar(self.user.email).get_image(default='identicon').replace('www.gravatar.com','gravatar.w3tt.com'),
             'time': str(self.time),
             'username' : self.user.username,
             'round': self.gameround.info(),
