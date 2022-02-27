@@ -1,5 +1,5 @@
 import eventlet
-from sqlalchemy import desc,func
+from sqlalchemy import desc, func
 eventlet.monkey_patch()
 import json
 import datetime
@@ -41,7 +41,7 @@ moment = Moment(app)
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'login'
-socket_io = SocketIO(app,logger=True, engineio_logger=True)
+socket_io = SocketIO(app, logger=True, engineio_logger=True)
 
 
 class User(UserMixin, db.Model):
@@ -64,7 +64,7 @@ class User(UserMixin, db.Model):
         return {
             'id': self.id,
             'username': self.username,
-            'gravatar': Gravatar(self.email).get_image(default='identicon').replace('www.gravatar.com','gravatar.w3tt.com')
+            'gravatar': Gravatar(self.email).get_image(default='identicon').replace('www.gravatar.com', 'gravatar.w3tt.com')
         }
 
 
@@ -82,17 +82,17 @@ class Record (db.Model):
         'Game', backref=db.backref('Record', lazy='dynamic'))
     gameround_id = db.Column(db.Integer, db.ForeignKey('game_round.id'))
     gameround = db.relationship(
-         'GameRound', backref=db.backref('Record', lazy='dynamic'))
+        'GameRound', backref=db.backref('Record', lazy='dynamic'))
 
-    def info (self):
+    def info(self):
         return {
             'id': self.id,
             'line': self.line,
             'title': self.title,
             'author': self.author,
-            'gravatar': Gravatar(self.user.email).get_image(default='identicon').replace('www.gravatar.com','gravatar.w3tt.com'),
+            'gravatar': Gravatar(self.user.email).get_image(default='identicon').replace('www.gravatar.com', 'gravatar.w3tt.com'),
             'time': str(self.time),
-            'username' : self.user.username,
+            'username': self.user.username,
             'round': self.gameround.info(),
         }
 
@@ -126,7 +126,9 @@ class GameRound (db.Model):
     def info(self):
         return {'text': self.get_character(), 'number': self.number, 'real_number': self.real_number}
 
-users=[]
+
+users = []
+
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -148,7 +150,8 @@ def register():
                                  DataRequired(), Length(1, 128)])
         password_check = PasswordField('Password_check', validators=[
                                        DataRequired(), Length(1, 128), EqualTo("password")])
-        email = StringField ('Email', validators=[DataRequired(), Length(1, 50)])
+        email = StringField('Email', validators=[
+                            DataRequired(), Length(1, 50)])
         submit = SubmitField('Register')
     form = RegisterForm()
     if form.validate_on_submit():
@@ -216,12 +219,14 @@ def disconnect():
     if current_user.is_authenticated:
         users.remove(current_user.id)
 
+
 @app.route('/api/users')
 def get_users():
     return jsonify([User.query.filter_by(id=u).first().info() for u in users])
 
+
 def clear_mark(string):
-    return string.replace("，", "").replace("；", "").replace("。", "").replace("！", "").replace("？", "").replace("、","")
+    return string.replace("，", "").replace("；", "").replace("。", "").replace("！", "").replace("？", "").replace("、", "")
 
 
 def game_start():
@@ -257,7 +262,7 @@ def round_start():
         roundnew = GameRound()
         roundnew.text = game.cleared_text()[round.number+1]
         roundnew.number = round.number+1
-        if game.text[round.real_number+1] == '，' or game.text[round.real_number+1] == '？' or game.text[round.real_number+1] == '。' or game.text[round.real_number+1] == '！'or game.text[round.real_number+1] == '。' or game.text[round.real_number+1] == '，':
+        if game.text[round.real_number+1] == '，' or game.text[round.real_number+1] == '？' or game.text[round.real_number+1] == '。' or game.text[round.real_number+1] == '！' or game.text[round.real_number+1] == '。' or game.text[round.real_number+1] == '，':
             roundnew.real_number = round.real_number+2
         else:
             roundnew.real_number = round.real_number+1
@@ -286,7 +291,7 @@ def answer(data):
     if current_app.game.text.find(text) != -1:
         emit('answer_check', {'message': '发原诗，卡 bug？'})
         return
-    if text[len(text)-1] != '。' and text[len(text)-1] != '？'and text[len(text)-1] != '！'and text[len(text)-1] != '；':
+    if text[len(text)-1] != '。' and text[len(text)-1] != '？' and text[len(text)-1] != '！' and text[len(text)-1] != '；':
         emit('answer_check', {'message': '末尾需要有标点符号'})
         return
     try:
@@ -306,7 +311,8 @@ def answer(data):
         # round_start()
         emit('answer_check', {'message': '提交成功', 'data': json.dumps({
              'title': check[0], 'author': check[1]})})
-        emit('record_add', {'message': '已有人答出', 'data': json.dumps(r.info())}, broadcast=True)
+        emit('record_add', {'message': '已有人答出',
+             'data': json.dumps(r.info())}, broadcast=True)
         time.sleep(5)
         round_start()
     else:
@@ -318,20 +324,25 @@ def test():
     emit('test', {'game': json.dumps(current_app.game.info()),
          'round': json.dumps(current_app.round.info())})
 
+
 @app.route('/api/history')
 # @login_required
 def history():
-    last=request.args.get('last', 19260817, type=int)
-    records = Record.query.filter(Record.id<last).order_by(desc(Record.id)).limit(10).all()
+    last = request.args.get('last', 19260817, type=int)
+    records = Record.query.filter(Record.id < last).order_by(
+        desc(Record.id)).limit(10).all()
     return jsonify([r.info() for r in records])
+
 
 @app.route('/api/ranklist')
 def ranklist():
-    perpage=request.args.get('perpage', 10, type=int)
-    page=request.args.get('page', 1, type=int)
-    users=User.query.join(Record, Record.user_id==User.id).with_entities(User.id, User.username, func.count(Record.id)).group_by(User.id).order_by(desc(func.count(Record.id))).paginate(page, perpage, False)
-    first=(page-1)*perpage+1
-    return jsonify({'page':page,"perpage":perpage,'data':[{"num":first+idx,"uid":u[0],"username":u[1],'count':u[2]} for idx,u in enumerate(users.items)]})
+    perpage = request.args.get('perpage', 10, type=int)
+    page = request.args.get('page', 1, type=int)
+    users = User.query.join(Record, Record.user_id == User.id).with_entities(User.id, User.username, func.count(
+        Record.id)).group_by(User.id).order_by(desc(func.count(Record.id))).paginate(page, perpage, False)
+    first = (page-1)*perpage+1
+    return jsonify({'page': page, "perpage": perpage, 'data': [{"num": first+idx, "uid": u[0], "username":u[1], 'count':u[2]} for idx, u in enumerate(users.items)]})
+
 
 if __name__ == '__main__':
     socket_io.run(app)
