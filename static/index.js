@@ -155,4 +155,7 @@ $(document).ready(function () {
         }
     });
     $('#load_more').click(load_more);
+    $('#skip').click(function () {
+        socket.emit('skip');
+    });
 });

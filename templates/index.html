@@ -27,6 +27,9 @@
                         </div>
                     </div>
                     <button class="ui primary button" id="submit">提交</button>
+                    {% if current_user.admin %}
+                    <button class="ui right floated button" id="skip">下一题</button>
+                    {% endif %}
                 </div>
             </div>
         </div>

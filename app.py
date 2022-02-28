@@ -343,6 +343,11 @@ def ranklist():
     first = (page-1)*perpage+1
     return jsonify({'page': page, "perpage": perpage, 'data': [{"num": first+idx, "uid": u[0], "username":u[1], 'count':u[2]} for idx, u in enumerate(users.items)]})
 
+@socket_io.on('skip')
+@login_required
+def skip():
+    if current_user.admin:
+        round_start()
 
 if __name__ == '__main__':
     socket_io.run(app)
