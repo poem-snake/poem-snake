@@ -291,7 +291,7 @@ def answer(data):
         return
     char = current_app.round.get_character()
     text = text[:w]+char+text[w+2:]
-    if current_app.game.text.find(text) != -1:
+    if current_app.game.text.find(text) != -1 or text.find(current_app.game.text) != -1:
         emit('answer_check', {'message': '发原诗，卡 bug？'})
         return
     if text[len(text)-1] != '。' and text[len(text)-1] != '？' and text[len(text)-1] != '！' and text[len(text)-1] != '；':
