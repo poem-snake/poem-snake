@@ -158,4 +158,7 @@ $(document).ready(function () {
     $('#skip').click(function () {
         socket.emit('skip');
     });
+    $('#hint').click(function () {
+        $('.ui.modal').modal('show');
+    });
 });

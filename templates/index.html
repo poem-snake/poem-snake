@@ -30,6 +30,7 @@
                     {% if current_user.admin %}
                     <button class="ui right floated button" id="skip">下一题</button>
                     {% endif %}
+                    <button class="ui right floated button" id="hint">提示</button>
                 </div>
             </div>
         </div>
@@ -44,6 +45,17 @@
                 </div>
             </div>
         </div>
+    </div>
+</div>
+<div class="ui modal">
+    <div class="header">提示</div>
+    <i class="close icon"></i>
+    <div class="content">
+        <p>首先，欢迎您来到这个小游戏《古诗（）谜》</p>
+        <p>这个游戏由 <a href="mailto:songhongyishy@foxmail.com">songhongyi</a> 编写，按照 MIT 协议在 Github <a href="https://github.com/william-song-shy/poem-snake">开源</a></p>
+        <p>如果您有什么建议，欢迎您在 Github 上提交 issue，或者向我发送邮件，我会尽快处理。</p>
+        <p>同时也欢迎您加入 QQ 群，<a target="_blank" href="https://qm.qq.com/cgi-bin/qm/qr?k=b8PrxbSeI5F4LK0gi0inRl6RVUdCL219&jump_from=webapi"><img border="0" src="//pub.idqqimg.com/wpa/images/group.png" alt="古诗（）谜讨论群" title="古诗（）谜讨论群"></a></p>
+        <p><a href="https://www.luogu.com.cn/paste/lxza07tk">这里</a>有游戏介绍和玩法说明</p>
     </div>
 </div>
 {% endblock body%}
