@@ -275,8 +275,11 @@ def round_start():
 
 
 @socket_io.on('answer')
-@login_required
+# @login_required
 def answer(data):
+    if not current_user.is_authenticated:
+        emit("answer_check", {'message': "请先登录"})
+        return
     text = data['data']
     r = Record()
     if len(text) <= 10 or len(text) >= 30:
