@@ -255,7 +255,7 @@ def round_start():
     round = current_app.round
     if round.number == len(game.cleared_text()) - 1:
         emit("game_end", {'message': "游戏结束"}, broadcast=True)
-        time.sleep(5)
+        time.sleep(9)
         game_start()
         return
     else:
@@ -270,6 +270,7 @@ def round_start():
         db.session.add(roundnew)
         db.session.commit()
         current_app.round = roundnew
+        time.sleep(5)
         emit("round_start", {'message': "新回合开始", 'data': json.dumps(
             roundnew.info())}, broadcast=True)
 
@@ -316,7 +317,6 @@ def answer(data):
              'title': check[0], 'author': check[1]})})
         emit('record_add', {'message': '已有人答出',
              'data': json.dumps(r.info())}, broadcast=True)
-        time.sleep(5)
         round_start()
     else:
         emit('answer_check', {'message': '没有找到这句诗'})
