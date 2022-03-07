@@ -254,8 +254,9 @@ def round_start():
     game = current_app.game
     round = current_app.round
     if round.number == len(game.cleared_text()) - 1:
+        time.sleep(5)
         emit("game_end", {'message': "游戏结束"}, broadcast=True)
-        time.sleep(9)
+        time.sleep(5)
         game_start()
         return
     else:
