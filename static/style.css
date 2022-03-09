@@ -9,3 +9,6 @@
     color:rgb(220, 0, 0);
     background-color: #e5e5e575;
 }
+::-webkit-scrollbar {
+    overflow-x:hidden;
+}
