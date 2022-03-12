@@ -6,6 +6,7 @@ socket.on('connect', function () {
 
 socket.on('disconnect', function () {
     console.log('Disconnected');
+    socket.connect();
 });
 
 socket.on('game_start', function (data) {
