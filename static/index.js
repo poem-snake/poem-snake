@@ -205,4 +205,19 @@ $(document).ready(function () {
         socket.emit("talk_message", { data: $("#talk_input").val() })
         $("#talk_input").val("")
     })
+    $('[data-tab="online"].item').click(function () {
+        $.get("/api/users", function (data) {
+            $("#online").html("");
+            for (let i = 0; i < data.length; i++) {
+                let user = data[i];
+                $("#online").append(`<div class="item">
+                <img class="ui avatar image" src="${user.gravatar}">
+                <div class="content">
+                    <a class="header">${user.username}</a>
+                    <div class="description">在线！</div>
+                </div>
+            </div>`)
+            }
+        });
+    })
 });
