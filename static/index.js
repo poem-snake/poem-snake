@@ -189,7 +189,7 @@ $(document).ready(function () {
     });
     $('#talk_input').keydown(function (e) {
         if (e.keyCode == 13 && e.ctrlKey) {
-            $('#submit').click();
+            $('#talk_submit').click();
         }
     });
     $('#load_more').click(load_more);
