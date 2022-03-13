@@ -171,6 +171,10 @@ $(document).ready(function () {
             let time = $(this).attr('data');
             $(this).text(moment.utc(time).fromNow());
         });
+        $("#talk .date").each(function () {
+            let time = $(this).attr('data');
+            $(this).text(moment.utc(time).fromNow());
+        });
     }, 10000);
     $('#submit').click(function () {
         $('#submit').removeClass("ui primary button").addClass("ui loading disabled primary button");
@@ -179,6 +183,11 @@ $(document).ready(function () {
         socket.emit('answer', { data: answer });
     });
     $('#answer').keydown(function (e) {
+        if (e.keyCode == 13 && e.ctrlKey) {
+            $('#submit').click();
+        }
+    });
+    $('#talk_input').keydown(function (e) {
         if (e.keyCode == 13 && e.ctrlKey) {
             $('#submit').click();
         }
