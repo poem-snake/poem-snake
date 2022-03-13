@@ -35,15 +35,36 @@
             </div>
         </div>
         <div class="six wide column">
-            <div class="ui raised segment" style="height: 470px;overflow: auto;">
-                <div class="ui feed" id="history">
-                </div>
-                <div class="ui center aligned grid">
-                    <div class="column">
-                        <button class="fluid ui button" id="load_more">查看更多</a>
+            <div class="ui tabular menu" style="margin-bottom: unset;">
+                <div class="item" data-tab="history">历史</div>
+                <div class="item" data-tab="talk">聊天</div>
+                <div class="item" data-tab="rank">排行榜</div>
+                <div class="item" data-tab="online">在线用户</div>
+            </div>
+            <div class="ui tab" data-tab="history" >
+                <div class="ui raised segment" style="height: 420px;overflow: auto;">
+                    <div class="ui feed" id="history">
+                    </div>
+                    <div class="ui center aligned grid">
+                        <div class="column">
+                            <button class="fluid ui button" id="load_more">查看更多</a>
+                        </div>
                     </div>
                 </div>
             </div>
+            <div class="ui tab" data-tab="talk">
+                <div class="ui raised segment" style="height: 420px">
+                    <div class="ui feed" id="talk" style="overflow: auto;">
+                    </div>
+                    <div class="ui form">
+                        <div class="field">
+                            <div class="ui input">
+                                <input type="text" id="talk_input">
+                            </div>
+                        </div>
+                        <button class="ui primary button" id="talk_submit">发送</button>
+                    </div>
+                </div>
         </div>
     </div>
 </div>

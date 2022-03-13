@@ -354,6 +354,10 @@ def skip():
     if current_user.admin:
         round_start()
 
+@socket_io.on('talk_message')
+def talk_message(data):
+    socket_io.emit('talk',{'message':data,'user':json.dumps(current_user.info())})
+
 
 if __name__ == '__main__':
     socket_io.run(app)

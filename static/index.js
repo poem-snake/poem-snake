@@ -107,6 +107,28 @@ socket.on('record_add', function (data) {
     }, 3000);
 });
 
+socket.on('talk',function(data){
+    // console.log(data);
+    message=data.message.data
+    udata=JSON.parse(data.user)
+    $("#talk").prepend(`<div class="event">
+    <div class="label">
+        <img src="${udata.gravatar}">
+    </div>
+    <div class="content">
+        <div class="summary">
+            <a class="user">${udata.username}</a> 在聊天中说
+            <div class="date" data="${moment.utc()}">${moment.utc().fromNow()} </div>
+        </div>
+        <div class="extra text">
+            <p>
+               ${filterXSS(message,options)}
+            </p>
+        </div>
+    </div>
+    `)
+})
+
 var last = 10000000000;
 
 function load_more() {
@@ -136,6 +158,12 @@ function load_more() {
     });
 }
 
+var options = {
+    whiteList: {
+        a: ['href', 'title', 'target']
+    }
+};
+
 $(document).ready(function () {
     load_more();
     setInterval(function () {
@@ -162,4 +190,10 @@ $(document).ready(function () {
     $('#hint').click(function () {
         $('.ui.modal').modal('show');
     });
+    $('.tabular.menu .item').tab();
+    $('.tabular.menu .item').tab('change tab', 'history');
+    $("#talk_submit").click(function () {
+        socket.emit("talk_message", { data: $("#talk_input").val() })
+        $("#talk_input").val("")
+    })
 });
