@@ -3,6 +3,7 @@ from sqlalchemy import desc, func
 eventlet.monkey_patch()
 import json
 import datetime
+import random
 from flask_socketio import SocketIO, emit
 from flask_moment import Moment
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -138,7 +139,8 @@ def load_user(user_id):
 
 @app.route('/')
 def main():
-    return render_template('index.html')
+    v = random.random()
+    return render_template('index.html', v=v)
 
 
 @app.route('/register', methods=['GET', 'POST'])
