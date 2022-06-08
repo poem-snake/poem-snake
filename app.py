@@ -42,7 +42,7 @@ moment = Moment(app)
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'login'
-socket_io = SocketIO(app, logger=True, engineio_logger=True)
+socket_io = SocketIO(app, logger=True, engineio_logger=True, cors_allowed_origins="*")
 
 
 class User(UserMixin, db.Model):
