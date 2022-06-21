@@ -3,7 +3,7 @@ from bs4 import BeautifulSoup
 
 
 def reserve_search_poem(string):
-    url = 'https://so.gushiwen.cn/search.aspx?value={}'.format(string)
+    url = 'https://so.gushiwen.cn/search.aspx?value={}&valuej={}'.format(string,string[0])
     r = requests.get(url)
     soup = BeautifulSoup(r.text, 'html.parser')
     data = soup.find('div', class_='sons')
@@ -27,8 +27,8 @@ def search_poem(string):
     # for i in data.children:
     #     l.append(i.string)
     # return l[0],l[1][1:-1]
-    url = 'https://so.gushiwen.cn/search.aspx?value={}&type=mingju'.format(
-        string)
+    url = 'https://so.gushiwen.cn/search.aspx?value={}&type=mingju&valuej={}'.format(
+        string,string[0])
     r = requests.get(url)
     soup = BeautifulSoup(r.text, 'html.parser')
     # print (soup)
