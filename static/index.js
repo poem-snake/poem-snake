@@ -1,4 +1,5 @@
 var game, round;
+var urd=0;
 var socket = io();
 socket.on('connect', function () {
     console.log('connected to server');
@@ -109,6 +110,15 @@ socket.on('record_add', function (data) {
 
 socket.on('talk',function(data){
     // console.log(data);
+    // 检测 talk 选项卡是否激活
+    if ($('[data-tab="talk"].item.active').attr("data-tab")!='talk')
+        urd++;
+    if (urd!=0)
+    {
+        $('[data-tab="talk"].item').html(
+            `聊天<span style="color:red;" id="urdlb">（${urd}）</span>`
+        );
+    }
     message=data.message.data
     udata=JSON.parse(data.user)
     $("#talk").prepend(`<div class="event">
@@ -219,5 +229,10 @@ $(document).ready(function () {
             </div>`)
             }
         });
-    })
+    });
+    $('[data-tab="talk"].item').click(function () {
+        urd=0;
+        console.log(urd);
+        $("#urdlb").remove();
+    });
 });
