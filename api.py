@@ -1,6 +1,8 @@
 import requests
 from bs4 import BeautifulSoup
 
+def clear_mark(string):
+    return string.replace("，", "").replace("；", "").replace("。", "").replace("！", "").replace("？", "").replace("、", "")
 
 def reserve_search_poem(string):
     url = 'https://so.gushiwen.cn/search.aspx?value={}&valuej={}'.format(string,string[0])
@@ -10,11 +12,14 @@ def reserve_search_poem(string):
     text = data.find('div', class_='contson')
     if not text:
         return None
-    line = text.find('span').text
-    if line != string:
+    line = text.text
+    line=clear_mark(line)
+    # print(line)
+    w=line.find(clear_mark(string))
+    if w == -1:
         return None
-    title = data.find('p').text.replace('\n', '')
-    author = data.find('p', class_='source').text.replace('\n', '')
+    title = data.find('p').text.replace('\n', '').replace ("\r", '').replace(' ', '')
+    author = data.find('p', class_='source').text.replace('\n', '').replace("\r", '').replace(' ', '')
     return title, author
 
 
@@ -35,10 +40,11 @@ def search_poem(string):
     data = soup.find('div', class_='sons')
     if not data:
         return reserve_search_poem(string)
+    string = clear_mark(string)
     # print (data)
     line = data.find('a')
     # print (data)
-    if (not line or line.text.find(string) == -1):
+    if (not line or clear_mark(line.text).find(string) == -1):
         # print (line.text,string, line.text.find(string))
         return None
     # line=line.parent.text

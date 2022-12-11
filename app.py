@@ -109,7 +109,7 @@ class Game (db.Model):
         return {'text': self.text, 'title': self.title, 'author': self.author}
 
     def cleared_text(self):
-        return clear_mark(self.text)
+        return api.clear_mark(self.text)
 
 
 class GameRound (db.Model):
@@ -227,8 +227,6 @@ def get_users():
     return jsonify([User.query.filter_by(id=u).first().info() for u in users])
 
 
-def clear_mark(string):
-    return string.replace("，", "").replace("；", "").replace("。", "").replace("！", "").replace("？", "").replace("、", "")
 
 
 def game_start():
