@@ -284,7 +284,7 @@ def answer(data):
         return
     text = data['data']
     r = Record()
-    if len(text) <= 10 or len(text) >= 30:
+    if len(api.clear_mark(text)) <= 6 or len(api.clear_mark(text)) >= 30:
         emit('answer_check', {'message': '长度不符合要求'})
         return
     w = text.find("（）")
@@ -293,7 +293,7 @@ def answer(data):
         return
     char = current_app.round.get_character()
     text = text[:w]+char+text[w+2:]
-    if current_app.game.text.find(text) != -1 or text.find(current_app.game.text) != -1:
+    if api.clear_mark(current_app.game.text).find(api.clear_mark(text)) != -1 or api.clear_mark(text).find(api.clear_mark(current_app.game.text)) != -1:
         emit('answer_check', {'message': '发原诗，卡 bug？'})
         return
     if text[len(text)-1] != '。' and text[len(text)-1] != '？' and text[len(text)-1] != '！' and text[len(text)-1] != '；':
@@ -302,6 +302,7 @@ def answer(data):
     try:
         check = api.search_poem(text)
     except Exception as e:
+        print (e)
         emit("answer_check", {'message': '出错了，大概率找不到这句诗'})
         return
     if check:
