@@ -1,23 +1,34 @@
 {% extends 'base.html' %}
 {% block title %}登录{% endblock %}
-{% block body %}
-<form method="POST" class="ui form">
+{% block nakebody %}
+<div style="display: flex;align-items: center;height:100%;">
+    <div class="ui middle aligned center aligned grid" style="width: 100%;">
+        <div class="column" style="max-width: 450px;">
+            <h2 class="ui image header">
+                <div class="content">
+                    <i class="user icon"></i>Login
+                </div>
+            </h2>
+            <form method="POST" class="ui large form">
 
-    {{ form.csrf_token }}
-    <div class="field">
-        <label>
-            用户名:
-        </label>
-        <input id="username" name="username" required="" type="text" value="">
+                {{ form.csrf_token }}
+                <div class="field">
+                    <label>
+                        用户名:
+                    </label>
+                    <input id="username" name="username" required="" type="text" value="">
+                </div>
+                <div class="field">
+                    <label>
+                        密码:
+                    </label>
+                    <input id="password" name="password" required="" type="password" value="">
+                </div>
+                <div class="field">
+                    <button class="ui primary button" id="submit" name="submit" type="submit">登录</button>
+            </form>
+        </div>
     </div>
-    <div class="field">
-        <label>
-            密码:
-        </label>
-        <input id="password" name="password" required="" type="password" value="">
-    </div>
-    <div class="field">
-        <button class="ui primary button" id="submit" name="submit" type="submit">登录</button>
-</form>
+</div>
 
-{% endblock body%}
+{% endblock nakebody%}

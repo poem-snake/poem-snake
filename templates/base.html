@@ -40,10 +40,15 @@
             </div>
         </div>
     </div>
+    {% block nakebody %}{% endblock %}
+    {% if not nake %}
     <div class="ui container" style="margin-top: 55px; ">
         {{ render_messages() }}
         {% block body %}{% endblock %}
     </div>
+    {% else %}
+    {{ render_messages() }}
+    {% endif %}
 </body>
 
 </html>

@@ -191,7 +191,7 @@ def login():
         login_user(user, True)
         flash('Login successfully.', 'success')
         return redirect(url_for('main'))
-    return render_template('login.html', form=form)
+    return render_template('login.html', form=form,nake=True)
 
 
 @app.route("/logout")
