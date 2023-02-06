@@ -230,6 +230,22 @@ $(document).ready(function () {
             }
         });
     });
+    $('[data-tab="rank"].item').click(function () {
+       $.get('/api/ranklist',function (data){
+           $('#rank').html("");
+           data=data.data
+           $.each(data,function (index,item){
+               $("#rank").append(`<div class="item">
+                <img class="ui avatar image" src="${item.gravatar}">
+                <div class="content">
+                    <a class="header">${item.username}</a>
+                    <div class="description">#${item.num}，${item.count} 条</div>
+                </div>
+            </div>
+               `)
+           })
+       })
+    });
     $('[data-tab="talk"].item').click(function () {
         urd=0;
         console.log(urd);

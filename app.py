@@ -343,10 +343,10 @@ def history():
 def ranklist():
     perpage = request.args.get('perpage', 10, type=int)
     page = request.args.get('page', 1, type=int)
-    users = User.query.join(Record, Record.user_id == User.id).with_entities(User.id, User.username, func.count(
+    users = User.query.join(Record, Record.user_id == User.id).with_entities(User.id, User.username,User.email, func.count(
         Record.id)).group_by(User.id).order_by(desc(func.count(Record.id))).paginate(page, perpage, False)
     first = (page-1)*perpage+1
-    return jsonify({'page': page, "perpage": perpage, 'data': [{"num": first+idx, "uid": u[0], "username":u[1], 'count':u[2]} for idx, u in enumerate(users.items)]})
+    return jsonify({'page': page, "perpage": perpage, 'data': [{"num": first+idx, "uid": u[0], "username":u[1], 'count':u[3],'gravatar':Gravatar(u[2]).get_image(default='identicon').replace('www.gravatar.com', 'gravatar.w3tt.com')} for idx, u in enumerate(users.items)]})
 
 
 @socket_io.on('skip')
