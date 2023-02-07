@@ -27,6 +27,15 @@ socket.on('game_end', function () {
     $('#author').html('');
 })
 
+socket.on('skip_check',function (data){
+    let mes = data.message;
+    swal({
+        title: data.status == "success" ? "请稍候下一题开始" : "跳过失败",
+        text: mes,
+        icon: data.status,
+    });
+})
+
 socket.on('round_start', function (data) {
     data = JSON.parse(data.data);
     let char = $("#problem_now").text();

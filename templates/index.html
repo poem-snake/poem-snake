@@ -27,9 +27,12 @@
                         </div>
                     </div>
                     <button class="ui primary button" id="submit">提交</button>
-                    {% if current_user.admin %}
-                    <button class="ui right floated button" id="skip">下一题</button>
-                    {% endif %}
+                    <button class="ui right floated button" id="skip">
+                        {% if not current_user.admin %}
+                            <i class="coins icon"></i> × 50
+                        {% endif %}
+                        下一题
+                    </button>
                     <button class="ui right floated button" id="hint">说明</button>
                 </div>
             </div>

@@ -19,6 +19,9 @@ from flask_wtf import FlaskForm
 from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, current_app
 import time
 from libgravatar import Gravatar
+from sys import platform
+
+DEV = platform == 'win32'
 
 
 load_dotenv(path.join(path.abspath(path.dirname(__file__)), '.env'))
@@ -34,7 +37,8 @@ PORT = '3306'
 DATABASE = 'poem_snake'
 app.config['SQLALCHEMY_DATABASE_URI'] = '{}+{}://{}:{}@{}:{}/{}?charset=utf8'.format(
     DIALECT, DRIVER, USERNAME, PASSWORD, HOST, PORT, DATABASE)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///'+app.root_path+'/data.db'
+if DEV:
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///'+app.root_path+'/data.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app, session_options={"expire_on_commit": False})
 migrate = Migrate(app, db)
@@ -51,6 +55,7 @@ class User(UserMixin, db.Model):
     password = db.Column(db.String(100))
     admin = db.Column(db.Boolean, default=False)
     email = db.Column(db.String(50), unique=True)
+    coin = db.Column(db.Integer)
 
     def __repr__(self):
         return '<User %r>' % self.username
@@ -68,6 +73,11 @@ class User(UserMixin, db.Model):
             'gravatar': Gravatar(self.email).get_image(default='identicon').replace('www.gravatar.com', 'gravatar.w3tt.com')
         }
 
+    def get_coin(self):
+        if self.coin is None:
+            self.coin = Record.query.filter_by(user_id=self.id).count()
+            db.session.commit()
+        return self.coin
 
 class Record (db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -312,6 +322,7 @@ def answer(data):
         r.user = current_user
         r.game = current_app.game
         r.gameround = current_app.round
+        current_user.coin += 1
         db.session.add(r)
         db.session.commit()
         # round_start()
@@ -348,12 +359,32 @@ def ranklist():
     first = (page-1)*perpage+1
     return jsonify({'page': page, "perpage": perpage, 'data': [{"num": first+idx, "uid": u[0], "username":u[1], 'count':u[3],'gravatar':Gravatar(u[2]).get_image(default='identicon').replace('www.gravatar.com', 'gravatar.w3tt.com')} for idx, u in enumerate(users.items)]})
 
+@app.route('/api/coin')
+@login_required
+def coin():
+    return jsonify({'coin': current_user.get_coin()})
+
+@app.route('/api/skipcheck')
+@login_required
+def skipcheck():
+    if current_user.admin or current_user.get_coin() >= 50:
+        return jsonify(True)
+    else:
+        return jsonify(False)
 
 @socket_io.on('skip')
 @login_required
 def skip():
     if current_user.admin:
+        emit('skip_check', {'status':'success','message': '管理员跳过'})
         round_start()
+    elif current_user.get_coin() >= 50:
+        current_user.coin -= 50
+        db.session.commit()
+        emit('skip_check', {'status': 'success', 'message': '花费 50 金币，剩余 {}'.format(current_user.get_coin())})
+        round_start()
+    else:
+        emit('skip_check', {'status': 'error', 'message': '金币不足，剩余 {}'.format(current_user.get_coin())})
 
 @socket_io.on('talk_message')
 def talk_message(data):
@@ -361,4 +392,7 @@ def talk_message(data):
 
 
 if __name__ == '__main__':
-    socket_io.run(app)
+    if DEV:
+        socket_io.run(app)
+    else:
+        socket_io.run(app, host='0.0.0.0', port=19999)
