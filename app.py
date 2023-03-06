@@ -322,7 +322,7 @@ def answer(data):
         r.user = current_user
         r.game = current_app.game
         r.gameround = current_app.round
-        current_user.coin += 1
+        current_user.coin = current_user.get_coin() + 1
         db.session.add(r)
         db.session.commit()
         # round_start()
