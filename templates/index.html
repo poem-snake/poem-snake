@@ -27,12 +27,14 @@
                         </div>
                     </div>
                     <button class="ui primary button" id="submit">提交</button>
+                    {% if current_user.is_authenticated %}
                     <button class="ui right floated button" id="skip">
                         {% if not current_user.admin %}
-                            <i class="coins icon"></i> × 50
+                            <i class="coins icon"></i> × <span id="coin_num"></span>/50
                         {% endif %}
                         下一题
                     </button>
+                    {% endif %}
                     <button class="ui right floated button" id="hint">说明</button>
                 </div>
             </div>

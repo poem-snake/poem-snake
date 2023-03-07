@@ -75,6 +75,7 @@ socket.on('answer_check', function (data) {
     else {
         $("#answer").parent().removeClass("ui input").addClass("uidisabled input");
         console.log("test success");
+        update_coin();
         $("#answer").val(mes);
         setTimeout(function () {
             $("#answer").parent().removeClass("ui disabled input").addClass("ui input");
@@ -183,8 +184,14 @@ var options = {
     }
 };
 
+function update_coin (){
+    $.get("/api/coin",function(data){
+        $("#coin_num").text(data.coin);
+    })
+}
 $(document).ready(function () {
     load_more();
+    update_coin();
     setInterval(function () {
         $("#history .date").each(function () {
             let time = $(this).attr('data');
