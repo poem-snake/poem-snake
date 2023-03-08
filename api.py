@@ -1,11 +1,13 @@
 import requests
 from bs4 import BeautifulSoup
 
+
 def clear_mark(string):
     return string.replace("，", "").replace("；", "").replace("。", "").replace("！", "").replace("？", "").replace("、", "")
 
+
 def reserve_search_poem(string):
-    url = 'https://so.gushiwen.cn/search.aspx?value={}&valuej={}'.format(string,string[0])
+    url = 'https://so.gushiwen.cn/search.aspx?value={}&valuej={}'.format(string, string[0])
     r = requests.get(url)
     soup = BeautifulSoup(r.text, 'html.parser')
     data = soup.find('div', class_='sons')
@@ -13,12 +15,12 @@ def reserve_search_poem(string):
     if not text:
         return None
     line = text.text
-    line=clear_mark(line)
+    line = clear_mark(line)
     # print(line)
-    w=line.find(clear_mark(string))
+    w = line.find(clear_mark(string))
     if w == -1:
         return None
-    title = data.find('p').text.replace('\n', '').replace ("\r", '').replace(' ', '')
+    title = data.find('p').text.replace('\n', '').replace("\r", '').replace(' ', '')
     author = data.find('p', class_='source').text.replace('\n', '').replace("\r", '').replace(' ', '')
     return title, author
 
@@ -33,7 +35,7 @@ def search_poem(string):
     #     l.append(i.string)
     # return l[0],l[1][1:-1]
     url = 'https://so.gushiwen.cn/search.aspx?value={}&type=mingju&valuej={}'.format(
-        string,string[0])
+        string, string[0])
     r = requests.get(url)
     soup = BeautifulSoup(r.text, 'html.parser')
     # print (soup)

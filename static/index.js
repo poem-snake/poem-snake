@@ -1,5 +1,5 @@
 var game, round;
-var urd=0;
+var urd = 0;
 var socket = io();
 socket.on('connect', function () {
     console.log('connected to server');
@@ -27,7 +27,7 @@ socket.on('game_end', function () {
     $('#author').html('');
 })
 
-socket.on('skip_check',function (data){
+socket.on('skip_check', function (data) {
     let mes = data.message;
     swal({
         title: data.status == "success" ? "请稍候下一题开始" : "跳过失败",
@@ -71,8 +71,7 @@ socket.on('answer_check', function (data) {
             $("#answer").parent().removeClass("ui error disabled input").addClass("ui input");
             $("#answer").val("");
         }, 2000);
-    }
-    else {
+    } else {
         $("#answer").parent().removeClass("ui input").addClass("uidisabled input");
         console.log("test success");
         update_coin();
@@ -118,19 +117,18 @@ socket.on('record_add', function (data) {
     }, 3000);
 });
 
-socket.on('talk',function(data){
+socket.on('talk', function (data) {
     // console.log(data);
     // 检测 talk 选项卡是否激活
-    if ($('[data-tab="talk"].item.active').attr("data-tab")!='talk')
+    if ($('[data-tab="talk"].item.active').attr("data-tab") != 'talk')
         urd++;
-    if (urd!=0)
-    {
+    if (urd != 0) {
         $('[data-tab="talk"].item').html(
             `聊天<span style="color:red;" id="urdlb">（${urd}）</span>`
         );
     }
-    message=data.message.data
-    udata=JSON.parse(data.user)
+    message = data.message.data
+    udata = JSON.parse(data.user)
     $("#talk").prepend(`<div class="event">
     <div class="label">
         <img src="${udata.gravatar}">
@@ -142,7 +140,7 @@ socket.on('talk',function(data){
         </div>
         <div class="extra text">
             <p>
-               ${filterXSS(message,options)}
+               ${filterXSS(message, options)}
             </p>
         </div>
     </div>
@@ -184,11 +182,12 @@ var options = {
     }
 };
 
-function update_coin (){
-    $.get("/api/coin",function(data){
+function update_coin() {
+    $.get("/api/coin", function (data) {
         $("#coin_num").text(data.coin);
     })
 }
+
 $(document).ready(function () {
     load_more();
     update_coin();
@@ -206,7 +205,7 @@ $(document).ready(function () {
         $('#submit').removeClass("ui primary button").addClass("ui loading disabled primary button");
         let answer = $('#answer').val();
         console.log(answer);
-        socket.emit('answer', { data: answer });
+        socket.emit('answer', {data: answer});
     });
     $('#answer').keydown(function (e) {
         if (e.keyCode == 13 && e.ctrlKey) {
@@ -228,7 +227,7 @@ $(document).ready(function () {
     $('.tabular.menu .item').tab();
     $('.tabular.menu .item').tab('change tab', 'history');
     $("#talk_submit").click(function () {
-        socket.emit("talk_message", { data: $("#talk_input").val() })
+        socket.emit("talk_message", {data: $("#talk_input").val()})
         $("#talk_input").val("")
     })
     $('[data-tab="online"].item').click(function () {
@@ -247,11 +246,11 @@ $(document).ready(function () {
         });
     });
     $('[data-tab="rank"].item').click(function () {
-       $.get('/api/ranklist',function (data){
-           $('#rank').html("");
-           data=data.data
-           $.each(data,function (index,item){
-               $("#rank").append(`<div class="item">
+        $.get('/api/ranklist', function (data) {
+            $('#rank').html("");
+            data = data.data
+            $.each(data, function (index, item) {
+                $("#rank").append(`<div class="item">
                 <img class="ui avatar image" src="${item.gravatar}">
                 <div class="content">
                     <a class="header">${item.username}</a>
@@ -259,11 +258,11 @@ $(document).ready(function () {
                 </div>
             </div>
                `)
-           })
-       })
+            })
+        })
     });
     $('[data-tab="talk"].item').click(function () {
-        urd=0;
+        urd = 0;
         console.log(urd);
         $("#urdlb").remove();
     });

@@ -23,7 +23,6 @@ from sys import platform
 
 DEV = platform == 'win32'
 
-
 load_dotenv(path.join(path.abspath(path.dirname(__file__)), '.env'))
 app = Flask(__name__)
 app.secret_key = environ.get('sk')
@@ -38,7 +37,7 @@ DATABASE = 'poem_snake'
 app.config['SQLALCHEMY_DATABASE_URI'] = '{}+{}://{}:{}@{}:{}/{}?charset=utf8'.format(
     DIALECT, DRIVER, USERNAME, PASSWORD, HOST, PORT, DATABASE)
 if DEV:
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///'+app.root_path+'/data.db'
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + app.root_path + '/data.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app, session_options={"expire_on_commit": False})
 migrate = Migrate(app, db)
@@ -70,7 +69,8 @@ class User(UserMixin, db.Model):
         return {
             'id': self.id,
             'username': self.username,
-            'gravatar': Gravatar(self.email).get_image(default='identicon').replace('www.gravatar.com', 'gravatar.w3tt.com')
+            'gravatar': Gravatar(self.email).get_image(default='identicon').replace('www.gravatar.com',
+                                                                                    'gravatar.w3tt.com')
         }
 
     def get_coin(self):
@@ -79,7 +79,8 @@ class User(UserMixin, db.Model):
             db.session.commit()
         return self.coin
 
-class Record (db.Model):
+
+class Record(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     line = db.Column(db.String(100))
     title = db.Column(db.String(100))
@@ -101,14 +102,15 @@ class Record (db.Model):
             'line': self.line,
             'title': self.title,
             'author': self.author,
-            'gravatar': Gravatar(self.user.email).get_image(default='identicon').replace('www.gravatar.com', 'gravatar.w3tt.com'),
+            'gravatar': Gravatar(self.user.email).get_image(default='identicon').replace('www.gravatar.com',
+                                                                                         'gravatar.w3tt.com'),
             'time': str(self.time),
             'username': self.user.username,
             'round': self.gameround.info(),
         }
 
 
-class Game (db.Model):
+class Game(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     text = db.Column(db.String(100))
     title = db.Column(db.String(100))
@@ -122,7 +124,7 @@ class Game (db.Model):
         return api.clear_mark(self.text)
 
 
-class GameRound (db.Model):
+class GameRound(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     # text = db.Column(db.String(5))
     game_id = db.Column(db.Integer, db.ForeignKey('game.id'))
@@ -157,14 +159,15 @@ def main():
 def register():
     class RegisterForm(FlaskForm):
         username = StringField('Username', validators=[
-                               DataRequired(), Length(1, 20)])
+            DataRequired(), Length(1, 20)])
         password = PasswordField('Password', validators=[
-                                 DataRequired(), Length(1, 128)])
+            DataRequired(), Length(1, 128)])
         password_check = PasswordField('Password_check', validators=[
-                                       DataRequired(), Length(1, 128), EqualTo("password")])
+            DataRequired(), Length(1, 128), EqualTo("password")])
         email = StringField('Email', validators=[
-                            DataRequired(), Length(1, 50)])
+            DataRequired(), Length(1, 50)])
         submit = SubmitField('Register')
+
     form = RegisterForm()
     if form.validate_on_submit():
         user = User.query.filter_by(username=form.username.data).first()
@@ -185,10 +188,11 @@ def register():
 def login():
     class LoginForm(FlaskForm):
         username = StringField('Username', validators=[
-                               DataRequired(), Length(1, 20)])
+            DataRequired(), Length(1, 20)])
         password = PasswordField('Password', validators=[
-                                 DataRequired(), Length(1, 128)])
+            DataRequired(), Length(1, 128)])
         submit = SubmitField('Log in')
+
     form = LoginForm()
     if form.validate_on_submit():
         user = User.query.filter_by(username=form.username.data).first()
@@ -201,7 +205,7 @@ def login():
         login_user(user, True)
         flash('Login successfully.', 'success')
         return redirect(url_for('main'))
-    return render_template('login.html', form=form,nake=True)
+    return render_template('login.html', form=form, nake=True)
 
 
 @app.route("/logout")
@@ -223,7 +227,7 @@ def connect():
             current_app.round = GameRound.query.filter_by(
                 game_id=current_app.game.id).order_by(desc(GameRound.number)).first()
     emit('connect_message', {'message': 'Connected', 'current_game_content':
-                             json.dumps(current_app.game.info()), "current_round": json.dumps(current_app.round.info())})
+        json.dumps(current_app.game.info()), "current_round": json.dumps(current_app.round.info())})
 
 
 @socket_io.on('disconnect')
@@ -235,8 +239,6 @@ def disconnect():
 @app.route('/api/users')
 def get_users():
     return jsonify([User.query.filter_by(id=u).first().info() for u in users])
-
-
 
 
 def game_start():
@@ -257,7 +259,7 @@ def game_start():
     db.session.commit()
     current_app.round = round
     emit("game_start", {'message': "新游戏开始",
-         'data': json.dumps(game.info())}, broadcast=True)
+                        'data': json.dumps(game.info())}, broadcast=True)
 
 
 def round_start():
@@ -271,12 +273,14 @@ def round_start():
         return
     else:
         roundnew = GameRound()
-        roundnew.text = game.cleared_text()[round.number+1]
-        roundnew.number = round.number+1
-        if game.text[round.real_number+1] == '，' or game.text[round.real_number+1] == '？' or game.text[round.real_number+1] == '。' or game.text[round.real_number+1] == '！' or game.text[round.real_number+1] == '。' or game.text[round.real_number+1] == '，':
-            roundnew.real_number = round.real_number+2
+        roundnew.text = game.cleared_text()[round.number + 1]
+        roundnew.number = round.number + 1
+        if game.text[round.real_number + 1] == '，' or game.text[round.real_number + 1] == '？' or game.text[
+            round.real_number + 1] == '。' or game.text[round.real_number + 1] == '！' or game.text[
+            round.real_number + 1] == '。' or game.text[round.real_number + 1] == '，':
+            roundnew.real_number = round.real_number + 2
         else:
-            roundnew.real_number = round.real_number+1
+            roundnew.real_number = round.real_number + 1
         roundnew.game = game
         db.session.add(roundnew)
         db.session.commit()
@@ -302,17 +306,19 @@ def answer(data):
         emit('answer_check', {'message': '没有找到括号'})
         return
     char = current_app.round.get_character()
-    text = text[:w]+char+text[w+2:]
-    if api.clear_mark(current_app.game.text).find(api.clear_mark(text)) != -1 or api.clear_mark(text).find(api.clear_mark(current_app.game.text)) != -1:
+    text = text[:w] + char + text[w + 2:]
+    if api.clear_mark(current_app.game.text).find(api.clear_mark(text)) != -1 or api.clear_mark(text).find(
+            api.clear_mark(current_app.game.text)) != -1:
         emit('answer_check', {'message': '发原诗，卡 bug？'})
         return
-    if text[len(text)-1] != '。' and text[len(text)-1] != '？' and text[len(text)-1] != '！' and text[len(text)-1] != '；':
+    if text[len(text) - 1] != '。' and text[len(text) - 1] != '？' and text[len(text) - 1] != '！' and text[
+        len(text) - 1] != '；':
         emit('answer_check', {'message': '末尾需要有标点符号'})
         return
     try:
         check = api.search_poem(text)
     except Exception as e:
-        print (e)
+        print(e)
         emit("answer_check", {'message': '出错了，大概率找不到这句诗'})
         return
     if check:
@@ -327,9 +333,9 @@ def answer(data):
         db.session.commit()
         # round_start()
         emit('answer_check', {'message': '提交成功', 'data': json.dumps({
-             'title': check[0], 'author': check[1]})})
+            'title': check[0], 'author': check[1]})})
         emit('record_add', {'message': '已有人答出',
-             'data': json.dumps(r.info())}, broadcast=True)
+                            'data': json.dumps(r.info())}, broadcast=True)
         round_start()
     else:
         emit('answer_check', {'message': '没有找到这句诗'})
@@ -338,7 +344,7 @@ def answer(data):
 @socket_io.on('test')
 def test():
     emit('test', {'game': json.dumps(current_app.game.info()),
-         'round': json.dumps(current_app.round.info())})
+                  'round': json.dumps(current_app.round.info())})
 
 
 @app.route('/api/history')
@@ -354,15 +360,22 @@ def history():
 def ranklist():
     perpage = request.args.get('perpage', 10, type=int)
     page = request.args.get('page', 1, type=int)
-    users = User.query.join(Record, Record.user_id == User.id).with_entities(User.id, User.username,User.email, func.count(
-        Record.id)).group_by(User.id).order_by(desc(func.count(Record.id))).paginate(page, perpage, False)
-    first = (page-1)*perpage+1
-    return jsonify({'page': page, "perpage": perpage, 'data': [{"num": first+idx, "uid": u[0], "username":u[1], 'count':u[3],'gravatar':Gravatar(u[2]).get_image(default='identicon').replace('www.gravatar.com', 'gravatar.w3tt.com')} for idx, u in enumerate(users.items)]})
+    users = User.query.join(Record, Record.user_id == User.id).with_entities(User.id, User.username, User.email,
+                                                                             func.count(
+                                                                                 Record.id)).group_by(User.id).order_by(
+        desc(func.count(Record.id))).paginate(page, perpage, False)
+    first = (page - 1) * perpage + 1
+    return jsonify({'page': page, "perpage": perpage, 'data': [
+        {"num": first + idx, "uid": u[0], "username": u[1], 'count': u[3],
+         'gravatar': Gravatar(u[2]).get_image(default='identicon').replace('www.gravatar.com', 'gravatar.w3tt.com')} for
+        idx, u in enumerate(users.items)]})
+
 
 @app.route('/api/coin')
 @login_required
 def coin():
     return jsonify({'coin': current_user.get_coin()})
+
 
 @app.route('/api/skipcheck')
 @login_required
@@ -372,11 +385,12 @@ def skipcheck():
     else:
         return jsonify(False)
 
+
 @socket_io.on('skip')
 @login_required
 def skip():
     if current_user.admin:
-        emit('skip_check', {'status':'success','message': '管理员跳过'})
+        emit('skip_check', {'status': 'success', 'message': '管理员跳过'})
         round_start()
     elif current_user.get_coin() >= 50:
         current_user.coin -= 50
@@ -386,9 +400,10 @@ def skip():
     else:
         emit('skip_check', {'status': 'error', 'message': '金币不足，剩余 {}'.format(current_user.get_coin())})
 
+
 @socket_io.on('talk_message')
 def talk_message(data):
-    socket_io.emit('talk',{'message':data,'user':json.dumps(current_user.info())})
+    socket_io.emit('talk', {'message': data, 'user': json.dumps(current_user.info())})
 
 
 if __name__ == '__main__':
