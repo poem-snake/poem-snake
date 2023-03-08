@@ -23,7 +23,7 @@
     <link rel="stylesheet" type="text/css" href="{{url_for('static', filename='style.css')}}">
 </head>
 
-<body>
+<body style="{% block body_style %}{% endblock %}">
     <div class="ui fixed borderless menu" style="height: 50px;">
         <div class="ui container">
             <a class="header item" href="{{url_for("main")}}">
