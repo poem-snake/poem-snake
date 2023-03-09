@@ -1,10 +1,10 @@
 import requests
 from bs4 import BeautifulSoup
+import re
 
 
 def clear_mark(string):
-    return string.replace("，", "").replace("；", "").replace("。", "").replace("！", "").replace("？", "").replace("、", "")
-
+    return re.sub(r'[，；。！？、]', '', string)
 
 def reserve_search_poem(string):
     url = 'https://so.gushiwen.cn/search.aspx?value={}&valuej={}'.format(string, string[0])
@@ -20,8 +20,10 @@ def reserve_search_poem(string):
     w = line.find(clear_mark(string))
     if w == -1:
         return None
-    title = data.find('p').text.replace('\n', '').replace("\r", '').replace(' ', '')
-    author = data.find('p', class_='source').text.replace('\n', '').replace("\r", '').replace(' ', '')
+    title = data.find('p').text
+    title = re.sub(r'[\n\r ]', '', title)
+    author = data.find('p', class_='source').text
+    author = re.sub(r'[\n\r ]', '', author)
     return title, author
 
 
