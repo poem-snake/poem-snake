@@ -14,12 +14,15 @@ from flask_login import LoginManager, UserMixin, login_user, login_required, log
 import api
 from flask_sqlalchemy import SQLAlchemy
 from wtforms.validators import DataRequired, EqualTo, Length
-from wtforms import SubmitField, StringField, PasswordField
+from wtforms import SubmitField, StringField, PasswordField, HiddenField
 from flask_wtf import FlaskForm
+from flask_wtf.file import FileField,FileRequired,FileAllowed
 from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, current_app
 import time
 from libgravatar import Gravatar
 from sys import platform
+import os
+from PIL import Image
 
 DEV = platform == 'win32'
 
@@ -55,6 +58,7 @@ class User(UserMixin, db.Model):
     admin = db.Column(db.Boolean, default=False)
     email = db.Column(db.String(50), unique=True)
     coin = db.Column(db.Integer)
+    avatar_uploaded = db.Column(db.Boolean, default=False)
 
     def __repr__(self):
         return '<User %r>' % self.username
@@ -405,6 +409,49 @@ def skip():
 def talk_message(data):
     socket_io.emit('talk', {'message': data, 'user': json.dumps(current_user.info())})
 
+@app.route ('/api/upload', methods=['POST'])
+def upload_avatar():
+    class AvatarForm (FlaskForm):
+        avatar = FileField (validators=[FileRequired (), FileAllowed (['png'], 'Images only!')])
+    form = AvatarForm ()
+    app.logger.info(request.files)
+    if form.validate_on_submit ():
+        if not current_user.is_authenticated:
+            return jsonify({'status': 'error', 'message': '请先登录'})
+        filename = str(current_user.id) + '.png'
+        try:
+            form.avatar.data.save(os.path.join ('./static/avatars/', filename))
+        except Exception as e:
+            return jsonify({'status': 'error', 'message': str(e)})
+        db.session.commit ()
+        return jsonify({'status': 'success', 'message': '上传成功'})
+    else:
+        return jsonify({'status': 'error', 'message': form.avatar.errors})
+
+@app.route ('/crop', methods=['POST'])
+def crop_avatar():
+    class CropAvatarForm(FlaskForm):
+        x1 = HiddenField()
+        y1 = HiddenField()
+        x2 = HiddenField()
+        y2 = HiddenField()
+        submit = SubmitField('Crop')
+    form = CropAvatarForm(csrf_enabled=False)
+    if form.validate_on_submit():
+        x1 = int(form.x1.data)
+        y1 = int(form.y1.data)
+        x2 = int(form.x2.data)
+        y2 = int(form.y2.data)
+        filename = str(current_user.id) + '.png'
+        if not os.path.exists(os.path.join('./static/avatars/', filename)):
+            return jsonify({'status': 'error', 'message': '请先上传图片'})
+        im = Image.open(os.path.join('./static/avatars/', filename))
+        im = im.crop((x1, y1, x2, y2))
+        im = im.resize((512, 512), Image.ANTIALIAS)
+        im.save(os.path.join('./static/avatars/', filename))
+        current_user.avatar_uploaded = True
+        return jsonify({'status': 'success', 'message': '上传成功'})
+    return jsonify({'status': 'error', 'message': form.errors})
 
 if __name__ == '__main__':
     if DEV:
