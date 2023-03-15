@@ -69,12 +69,18 @@ class User(UserMixin, db.Model):
     def check_password(self, password):
         return check_password_hash(self.password, password)
 
+    def get_avatar (self):
+        if self.avatar_uploaded:
+            return url_for('static', filename='avatars/{}.jpg'.format(self.id))
+        else:
+            return Gravatar(self.email).get_image(default='identicon').replace('www.gravatar.com',
+                                                                                    'gravatar.rotriw.com')
+
     def info(self):
         return {
             'id': self.id,
             'username': self.username,
-            'gravatar': Gravatar(self.email).get_image(default='identicon').replace('www.gravatar.com',
-                                                                                    'gravatar.w3tt.com')
+            'gravatar': self.get_avatar()
         }
 
     def get_coin(self):
@@ -106,8 +112,7 @@ class Record(db.Model):
             'line': self.line,
             'title': self.title,
             'author': self.author,
-            'gravatar': Gravatar(self.user.email).get_image(default='identicon').replace('www.gravatar.com',
-                                                                                         'gravatar.w3tt.com'),
+            'gravatar': self.user.get_avatar(),
             'time': str(self.time),
             'username': self.user.username,
             'round': self.gameround.info(),
