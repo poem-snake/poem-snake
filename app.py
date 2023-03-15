@@ -376,7 +376,7 @@ def ranklist():
     first = (page - 1) * perpage + 1
     return jsonify({'page': page, "perpage": perpage, 'data': [
         {"num": first + idx, "uid": u[0], "username": u[1], 'count': u[3],
-         'gravatar': Gravatar(u[2]).get_image(default='identicon').replace('www.gravatar.com', 'gravatar.w3tt.com')} for
+         'gravatar': Gravatar(u[2]).get_image(default='identicon').replace('www.gravatar.com', 'gravatar.rotriw.com')} for
         idx, u in enumerate(users.items)]})
 
 
