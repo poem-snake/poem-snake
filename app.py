@@ -71,7 +71,7 @@ class User(UserMixin, db.Model):
 
     def get_avatar (self):
         if self.avatar_uploaded:
-            return url_for('static', filename='avatars/{}.jpg'.format(self.id))
+            return url_for('static', filename='avatars/{}.png'.format(self.id))
         else:
             return Gravatar(self.email).get_image(default='identicon').replace('www.gravatar.com',
                                                                                     'gravatar.rotriw.com')
@@ -371,12 +371,12 @@ def ranklist():
     page = request.args.get('page', 1, type=int)
     users = User.query.join(Record, Record.user_id == User.id).with_entities(User.id, User.username, User.email,
                                                                              func.count(
-                                                                                 Record.id)).group_by(User.id).order_by(
+                                                                                 Record.id), User.avatar_uploaded).group_by(User.id).order_by(
         desc(func.count(Record.id))).paginate(page, perpage, False)
     first = (page - 1) * perpage + 1
     return jsonify({'page': page, "perpage": perpage, 'data': [
         {"num": first + idx, "uid": u[0], "username": u[1], 'count': u[3],
-         'gravatar': Gravatar(u[2]).get_image(default='identicon').replace('www.gravatar.com', 'gravatar.rotriw.com')} for
+         'gravatar': Gravatar(u[2]).get_image(default='identicon').replace('www.gravatar.com', 'gravatar.rotriw.com') if not u[4] else f'/static/avatars/{u[0]}.png'} for
         idx, u in enumerate(users.items)]})
 
 
@@ -417,8 +417,8 @@ def talk_message(data):
 @app.route ('/api/upload', methods=['POST'])
 def upload_avatar():
     class AvatarForm (FlaskForm):
-        avatar = FileField (validators=[FileRequired (), FileAllowed (['png'], 'Images only!')])
-    form = AvatarForm ()
+        avatar = FileField (validators=[FileRequired (), FileAllowed (['png','jpg'], 'Images only!')])
+    form = AvatarForm (meta={'csrf': False} )
     app.logger.info(request.files)
     if form.validate_on_submit ():
         if not current_user.is_authenticated:
@@ -428,12 +428,13 @@ def upload_avatar():
             form.avatar.data.save(os.path.join ('./static/avatars/', filename))
         except Exception as e:
             return jsonify({'status': 'error', 'message': str(e)})
+        current_user.avatar_uploaded = False
         db.session.commit ()
         return jsonify({'status': 'success', 'message': '上传成功'})
     else:
-        return jsonify({'status': 'error', 'message': form.avatar.errors})
+        return jsonify({'status': 'error', 'message': form.errors})
 
-@app.route ('/crop', methods=['POST'])
+@app.route ('/account/crop', methods=['POST'])
 def crop_avatar():
     class CropAvatarForm(FlaskForm):
         x1 = HiddenField()
@@ -441,7 +442,7 @@ def crop_avatar():
         x2 = HiddenField()
         y2 = HiddenField()
         submit = SubmitField('Crop')
-    form = CropAvatarForm(csrf_enabled=False)
+    form = CropAvatarForm(meta={'csrf': False} )
     if form.validate_on_submit():
         x1 = int(form.x1.data)
         y1 = int(form.y1.data)
@@ -455,8 +456,19 @@ def crop_avatar():
         im = im.resize((512, 512), Image.ANTIALIAS)
         im.save(os.path.join('./static/avatars/', filename))
         current_user.avatar_uploaded = True
+        db.session.commit()
         return jsonify({'status': 'success', 'message': '上传成功'})
     return jsonify({'status': 'error', 'message': form.errors})
+
+@app.route('/account/avatar/')
+@login_required
+def change_avatar ():
+    file_name = str(current_user.id) + '.png'
+    if os.path.exists(os.path.join('./static/avatars/', file_name)) and not current_user.avatar_uploaded:
+        t = 'crop'
+    else:
+        t = 'upload'
+    return render_template('avatar.html', type=t)
 
 if __name__ == '__main__':
     if DEV:

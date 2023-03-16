@@ -1,0 +1,198 @@
+{% extends 'base.html' %}
+{% block title %}上传头像{% endblock %}
+{% block nakebody %}
+    <div style="display: flex;align-items: center;height:100%;">
+        <div class="ui middle aligned center aligned grid" style="width: 100%;">
+            <div class="column" style="max-width: 600px;">
+                {% if type == "upload" %}
+                    <h2 class="ui image header">
+                        <div class="content">
+                            <i class="upload icon"></i>上传您的头像
+                        </div>
+                    </h2>
+                    <div>
+                        <input id="avatar" name="avatar" type="file" accept=".png,.jpg" class="ui invisible file input">
+                        <label for="avatar" class="ui placeholder segment">
+                            <div class="ui icon header">
+                                <i class="upload icon"></i>
+                                点此上传
+                            </div>
+                        </label>
+                        <div class="ui message" id="file-list" style="display: none"></div>
+                        <button class="ui primary button" id="submit" style="display: none">提交</button>
+                    </div>
+                {% else %}
+                    <link rel="stylesheet"
+                          href="https://cdn.bootcdn.net/ajax/libs/jquery-jcrop/0.9.15/css/jquery.Jcrop.min.css"
+                          type="text/css"/>
+                    <script src="https://cdn.bootcdn.net/ajax/libs/jquery-jcrop/0.9.15/js/jquery.Jcrop.min.js"></script>
+                    <h2 class="ui image header">
+                        <div class="content">
+                            <i class="crop icon"></i>裁剪您的头像
+                        </div>
+                    </h2>
+                    <div>
+                        <img class="ui image" id="avatar" src="/static/avatars/{{ current_user.id }}.png">
+                        <button class="ui primary button" id="submit" style="margin-top: 1.5pc;">提交</button>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% if type == "upload" %}
+        <script>
+            var file;
+            $(document).ready(function () {
+
+                $('.ui.placeholder.segment').on('dragover', function (e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    $(this).addClass('dragging');
+                });
+
+                $('.ui.placeholder.segment').on('dragleave', function (e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    $(this).removeClass('dragging');
+                });
+
+                $('.ui.placeholder.segment').on('drop', function (e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    $(this).removeClass('dragging');
+                    handleFiles(e.originalEvent.dataTransfer.files);
+                });
+
+                $('#avatar').on('change', function (e) {
+                    handleFiles(e.target.files);
+                });
+
+                $('#submit').on('click', function () {
+                    var formData = new FormData();
+                    formData.append('avatar', file);
+                    $.ajax({
+                        url: '/api/upload',
+                        type: 'POST',
+                        data: formData,
+                        processData: false,
+                        contentType: false,
+                        success: function (response) {
+                            if (response.status === "success") {
+                                swal({
+                                    title: "成功",
+                                    text: "上传成功；点击确认按钮进入头像裁剪",
+                                    icon: "success",
+                                    button: "确认"
+                                }).then(function () {
+                                    location.reload();
+                                });
+                            } else {
+                                swal({
+                                    title: "错误",
+                                    text: response.message,
+                                    icon: "error"
+                                });
+                            }
+                        },
+                        error: function (xhr, status, error) {
+                            console.error(error);
+                            swal({
+                                title: "错误",
+                                text: `发生了意料之外的上传错误
+                            错误信息为：${error}`,
+                                icon: "error"
+                            });
+                        }
+                    });
+                });
+            });
+
+            function handleFiles(files) {
+                if (files.length !== 1) {
+                    swal({
+                        title: "错误",
+                        text: "只能上传一个文件",
+                        icon: "error"
+                    });
+                    return;
+                }
+                file = files[0];
+                if (!file.type.match(/image\/(jpeg|png)/)) {
+                    swal({
+                        title: "错误",
+                        text: "只能上传 jpg 或 png 格式的图片",
+                        icon: "error"
+                    });
+                    return;
+                }
+                if (file.size > 1024 * 1024 * 8) {
+                    swal({
+                        title: "错误",
+                        text: "图片大小不能超过 8 MB",
+                        icon: "error"
+                    });
+                    return;
+                }
+                $('#file-list').text(`您已选择：${file.name}
+            点击提交按钮提交`).show();
+                $('#submit').show();
+            }
+        </script>
+    {% else %}
+        <script>
+            $(document).ready(function () {
+                var size;
+                $('#avatar').Jcrop({
+                    allowSelect: true,
+                    allowMove: true,
+                    allowResize: true,
+                    fixedSupport: true,
+                    aspectRatio: 1,
+                    onSelect: function (c) {
+                        w = $('#avatar').width();
+                        h = $('#avatar').height();
+                        realw = $('#avatar').prop('naturalWidth');
+                        realh = $('#avatar').prop('naturalHeight');
+                        realx1 = c.x * realw / w;
+                        realy1 = c.y * realh / h;
+                        realx2 = c.x2 * realw / w;
+                        realy2 = c.y2 * realh / h;
+                        realx1 = Math.round(realx1);
+                        realy1 = Math.round(realy1);
+                        realx2 = Math.round(realx2);
+                        realy2 = Math.round(realy2);
+                        size = {
+                            x1: realx1, y1: realy1,
+                            x2: realx2, y2: realy2
+                        };
+                        console.log(size)
+
+                        $("#submit").css(
+                            "visibility", "visible");
+                    }
+                });
+
+                $("#submit").click(function () {
+                    $.post('/account/crop', size, function (data) {
+                        console.log(data);
+                        if (data.status === 'success') {
+                            swal({
+                                title: "成功",
+                                text: "裁剪成功。您可以关闭此页面了。",
+                                icon: "success",
+                                button: "确认"
+                            })
+                        }
+                        else{
+                            swal({
+                                title: "错误",
+                                text: data.message,
+                                icon: "error"
+                            })
+                        }
+                    })
+                });
+            });
+        </script>
+    {% endif %}
+{% endblock %}
