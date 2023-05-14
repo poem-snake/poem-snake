@@ -2,6 +2,7 @@
 ![GitHub](https://img.shields.io/github/license/poem-snake/poem-snake)
 ![](https://img.shields.io/badge/QQ%20%E7%BE%A4-637873933-blue)
 [![爱发电](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fapi.swo.moe%2Fstats%2Fafdian%2Fsonghongyi&query=count&color=282c34&label=%E7%88%B1%E5%8F%91%E7%94%B5&labelColor=946ce6&suffix=+%E5%8F%91%E7%94%B5%E4%BA%BA%E6%AC%A1+%2F+%E6%9C%88&cacheSeconds=3600)](https://afdian.net/@songhongyi)
+[![wakatime](https://wakatime.com/badge/github/poem-snake/poem-snake.svg)](https://wakatime.com/badge/github/poem-snake/poem-snake)
 
 # 🐍 Poem Snake - 古诗（）迷 📜
 
