@@ -204,6 +204,9 @@ $(document).ready(function () {
     $('#submit').click(function () {
         $('#submit').removeClass("ui primary button").addClass("ui loading disabled primary button");
         let answer = $('#answer').val();
+        if (answer.includes($(".now_char").text())){
+            answer = answer.replace($(".now_char").text(), "（）");
+        }
         console.log(answer);
         socket.emit('answer', {data: answer});
     });
