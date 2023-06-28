@@ -1,6 +1,7 @@
 var game, round;
 var urd = 0;
 var socket = io();
+var lst_ans = "";
 socket.on('connect', function () {
     console.log('connected to server');
 });
@@ -68,8 +69,10 @@ socket.on('answer_check', function (data) {
         $("#answer").parent().removeClass("ui input").addClass("ui error disabled input");
         $("#answer").val(mes);
         setTimeout(function () {
-            $("#answer").parent().removeClass("ui error disabled input").addClass("ui input");
-            $("#answer").val("");
+            if ($(this).parent().hasClass('disabled')) {
+                $("#answer").parent().removeClass("ui error disabled input").addClass("ui input");
+                $("#answer").val(lst_ans);
+            }
         }, 2000);
     } else {
         $("#answer").parent().removeClass("ui input").addClass("uidisabled input");
@@ -204,6 +207,7 @@ $(document).ready(function () {
     $('#submit').click(function () {
         $('#submit').removeClass("ui primary button").addClass("ui loading disabled primary button");
         let answer = $('#answer').val();
+        lst_ans = answer;
         if (answer.includes($(".now_char").text())){
             answer = answer.replace($(".now_char").text(), "（）");
         }
@@ -213,6 +217,10 @@ $(document).ready(function () {
     $('#answer').keydown(function (e) {
         if (e.keyCode == 13 && e.ctrlKey) {
             $('#submit').click();
+        }
+        else if ($(this).parent().hasClass('disabled')){
+            $("#answer").parent().removeClass("ui error disabled input").addClass("ui input");
+            $(this).val(lst_ans);
         }
     });
     $('#talk_input').keydown(function (e) {
