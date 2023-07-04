@@ -1,5 +1,6 @@
 import eventlet
 from sqlalchemy import desc, func
+
 eventlet.monkey_patch()
 import json
 import datetime
@@ -16,7 +17,7 @@ from flask_sqlalchemy import SQLAlchemy
 from wtforms.validators import DataRequired, EqualTo, Length
 from wtforms import SubmitField, StringField, PasswordField, HiddenField
 from flask_wtf import FlaskForm
-from flask_wtf.file import FileField,FileRequired,FileAllowed
+from flask_wtf.file import FileField, FileRequired, FileAllowed
 from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, current_app
 import time
 from libgravatar import Gravatar
@@ -69,12 +70,12 @@ class User(UserMixin, db.Model):
     def check_password(self, password):
         return check_password_hash(self.password, password)
 
-    def get_avatar (self):
+    def get_avatar(self):
         if self.avatar_uploaded:
             return url_for('static', filename='avatars/{}.png'.format(self.id))
         else:
             return Gravatar(self.email).get_image(default='identicon').replace('www.gravatar.com',
-                                                                                    'gravatar.rotriw.com')
+                                                                               'gravatar.rotriw.com')
 
     def info(self):
         return {
@@ -370,13 +371,16 @@ def ranklist():
     perpage = request.args.get('perpage', 10, type=int)
     page = request.args.get('page', 1, type=int)
     users = User.query.join(Record, Record.user_id == User.id).with_entities(User.id, User.username, User.email,
-                                                                             func.count(
-                                                                                 Record.id), User.avatar_uploaded).group_by(User.id).order_by(
+                                                                             func.count(Record.id),
+                                                                             User.avatar_uploaded).group_by(
+        User.id).order_by(
         desc(func.count(Record.id))).paginate(page, perpage, False)
     first = (page - 1) * perpage + 1
     return jsonify({'page': page, "perpage": perpage, 'data': [
         {"num": first + idx, "uid": u[0], "username": u[1], 'count': u[3],
-         'gravatar': Gravatar(u[2]).get_image(default='identicon').replace('www.gravatar.com', 'gravatar.rotriw.com') if not u[4] else f'/static/avatars/{u[0]}.png'} for
+         'gravatar': Gravatar(u[2]).get_image(default='identicon').replace('www.gravatar.com',
+                                                                           'gravatar.rotriw.com')
+         if not u[4] else f'/static/avatars/{u[0]}.png'} for
         idx, u in enumerate(users.items)]})
 
 
@@ -414,27 +418,30 @@ def skip():
 def talk_message(data):
     socket_io.emit('talk', {'message': data, 'user': json.dumps(current_user.info())})
 
-@app.route ('/api/upload', methods=['POST'])
+
+@app.route('/api/upload', methods=['POST'])
 def upload_avatar():
-    class AvatarForm (FlaskForm):
-        avatar = FileField (validators=[FileRequired (), FileAllowed (['png','jpg'], 'Images only!')])
-    form = AvatarForm (meta={'csrf': False} )
+    class AvatarForm(FlaskForm):
+        avatar = FileField(validators=[FileRequired(), FileAllowed(['png', 'jpg'], 'Images only!')])
+
+    form = AvatarForm(meta={'csrf': False})
     app.logger.info(request.files)
-    if form.validate_on_submit ():
+    if form.validate_on_submit():
         if not current_user.is_authenticated:
             return jsonify({'status': 'error', 'message': '请先登录'})
         filename = str(current_user.id) + '.png'
         try:
-            form.avatar.data.save(os.path.join ('./static/avatars/', filename))
+            form.avatar.data.save(os.path.join('./static/avatars/', filename))
         except Exception as e:
             return jsonify({'status': 'error', 'message': str(e)})
         current_user.avatar_uploaded = False
-        db.session.commit ()
+        db.session.commit()
         return jsonify({'status': 'success', 'message': '上传成功'})
     else:
         return jsonify({'status': 'error', 'message': form.errors})
 
-@app.route ('/account/crop', methods=['POST'])
+
+@app.route('/account/crop', methods=['POST'])
 def crop_avatar():
     class CropAvatarForm(FlaskForm):
         x1 = HiddenField()
@@ -442,7 +449,8 @@ def crop_avatar():
         x2 = HiddenField()
         y2 = HiddenField()
         submit = SubmitField('Crop')
-    form = CropAvatarForm(meta={'csrf': False} )
+
+    form = CropAvatarForm(meta={'csrf': False})
     if form.validate_on_submit():
         x1 = int(form.x1.data)
         y1 = int(form.y1.data)
@@ -460,15 +468,17 @@ def crop_avatar():
         return jsonify({'status': 'success', 'message': '上传成功'})
     return jsonify({'status': 'error', 'message': form.errors})
 
+
 @app.route('/account/avatar/')
 @login_required
-def change_avatar ():
+def change_avatar():
     file_name = str(current_user.id) + '.png'
     if os.path.exists(os.path.join('./static/avatars/', file_name)) and not current_user.avatar_uploaded:
         t = 'crop'
     else:
         t = 'upload'
     return render_template('avatar.html', type=t)
+
 
 if __name__ == '__main__':
     if DEV:
