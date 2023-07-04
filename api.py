@@ -6,6 +6,7 @@ import re
 def clear_mark(string):
     return re.sub(r'[，；。！？、]', '', string)
 
+
 def reserve_search_poem(string):
     url = 'https://so.gushiwen.cn/search.aspx?value={}&valuej={}'.format(string, string[0])
     r = requests.get(url)
