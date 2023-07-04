@@ -1,4 +1,5 @@
 var game, round;
+var user;
 var urd = 0;
 var socket = io();
 var lst_ans = "";
@@ -49,6 +50,15 @@ socket.on('round_start', function (data) {
 socket.on("connect_message", function (data) {
     game = JSON.parse(data.current_game_content);
     round = JSON.parse(data.current_round);
+    user = data.current_user;
+    if (user == null) {
+        $("#answer").parent().prepend(`<div class="ui inverted dimmer transition visible active">
+<div class="content"><h2 class="ui icon header">
+                                            <i class="lock icon"></i>
+                                                请先登录！
+                                          </h2></div></div>`);
+        $("#submit").addClass("disabled");
+    }
     console.log(game, round);
     text = game.text;
     title = game.title;
