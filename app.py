@@ -333,7 +333,7 @@ def answer(data):
         emit("answer_check", {'message': '出错了，大概率找不到这句诗'})
         return
     if check:
-        r.line = text
+        r.line = check[2]
         r.title = check[0]
         r.author = check[1]
         r.user = current_user

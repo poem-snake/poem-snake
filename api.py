@@ -8,10 +8,11 @@ def clear_mark(string):
 
 
 def mark_to_all(string):
-    return re.sub(r'[，；。！？、]', '.?', string)
+    return re.sub(r'[，；。！？、]', '[，；。！？、]?', string)
 
 
 def judge(poem, inp):
+    inp = r'.?'.join(list(inp))
     inp = mark_to_all(inp)
     inp = r'(?<=[；。！？]|^|\s)' + inp + r'(?=[；。！？]|$|\s)'
     res = re.search(inp, poem)
@@ -23,6 +24,7 @@ def judge(poem, inp):
     if line[-1] not in ['。', '？', '！', '；']:
         line = line + poem[res.end():res.end() + 1]
     return line
+
 
 def reserve_search_poem(string):
     url = 'https://so.gushiwen.cn/search.aspx?value={}&valuej={}'.format(string, string[0])
