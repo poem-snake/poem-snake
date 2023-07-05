@@ -309,7 +309,7 @@ def answer(data):
         return
     text = data['data']
     r = Record()
-    if len(api.clear_mark(text)) <= 6 or len(api.clear_mark(text)) >= 30:
+    if len(api.clear_mark(text)) <= 8 or len(api.clear_mark(text)) >= 30:
         emit('answer_check', {'message': '长度不符合要求'})
         return
     w = text.find("（）")
