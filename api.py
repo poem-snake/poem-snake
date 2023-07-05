@@ -1,61 +1,66 @@
 import requests
 from bs4 import BeautifulSoup
-import re
+import regex as re
 
 
 def clear_mark(string):
     return re.sub(r'[，；。！？、]', '', string)
 
 
+def mark_to_all(string):
+    return re.sub(r'[，；。！？、]', '.?', string)
+
+
+def judge(poem, inp):
+    inp = mark_to_all(inp)
+    inp = r'(?<=[；。！？]|^|\s)' + inp + r'(?=[；。！？]|$|\s)'
+    res = re.search(inp, poem)
+    if not res:
+        return None
+    line = res.group()
+    if not line:
+        return None
+    if line[-1] not in ['。', '？', '！', '；']:
+        line = line + poem[res.end():res.end() + 1]
+    return line
+
 def reserve_search_poem(string):
     url = 'https://so.gushiwen.cn/search.aspx?value={}&valuej={}'.format(string, string[0])
     r = requests.get(url)
     soup = BeautifulSoup(r.text, 'html.parser')
     data = soup.find('div', class_='sons')
+    if not data:
+        return None
     text = data.find('div', class_='contson')
     if not text:
         return None
     line = text.text
-    line = clear_mark(line)
-    # print(line)
-    w = line.find(clear_mark(string))
-    if w == -1:
+    res = judge(line, string)
+    if not res:
         return None
     title = data.find('p').text
     title = re.sub(r'[\n\r ]', '', title)
     author = data.find('p', class_='source').text
     author = re.sub(r'[\n\r ]', '', author)
-    return title, author
+    return title, author, res
 
 
 def search_poem(string):
-    # url='http://www.esk365.com/sccx/scso.php?wd={}'.format(string)
-    # r=requests.get(url)
-    # soup = BeautifulSoup(r.text, 'html.parser')
-    # data = soup.find('p',class_='z16 hl32 zq5')
-    # l=[]
-    # for i in data.children:
-    #     l.append(i.string)
-    # return l[0],l[1][1:-1]
     url = 'https://so.gushiwen.cn/search.aspx?value={}&type=mingju&valuej={}'.format(
         string, string[0])
     r = requests.get(url)
     soup = BeautifulSoup(r.text, 'html.parser')
-    # print (soup)
     data = soup.find('div', class_='sons')
     if not data:
         return reserve_search_poem(string)
-    string = clear_mark(string)
-    # print (data)
     line = data.find('a')
-    # print (data)
-    if (not line or clear_mark(line.text).find(string) == -1):
-        # print (line.text,string, line.text.find(string))
+    if not line:
         return None
-    # line=line.parent.text
-    # print(data.find_all('a')[1].text)
+    res = judge(line.text, string)
+    if not res:
+        return None
     author, title = data.find_all('a')[1].text.split('《')
-    return title[:-1], author  # ,line
+    return title[:-1], author, res
 
 
 def get_poem():
