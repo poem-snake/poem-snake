@@ -333,9 +333,12 @@ def answer(data):
         emit("answer_check", {'message': '出错了，大概率找不到这句诗'})
         return
     if check:
-        r.line = check[2]
-        r.title = check[0]
-        r.author = check[1]
+        if not check.is_valid():
+            emit('answer_check', {'message': check.error_msg()})
+            return
+        r.line = check.content
+        r.title = check.title
+        r.author = check.author
         r.user = current_user
         r.game = current_app.game
         r.gameround = current_app.round
@@ -344,7 +347,7 @@ def answer(data):
         db.session.commit()
         # round_start()
         emit('answer_check', {'message': '提交成功', 'data': json.dumps({
-            'title': check[0], 'author': check[1]})})
+            'title': r.title, 'author': r.author})})
         emit('record_add', {'message': '已有人答出',
                             'data': json.dumps(r.info())}, broadcast=True)
         round_start()

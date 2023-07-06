@@ -11,6 +11,26 @@ def mark_to_all(string):
     return re.sub(r'[，；。！？、]', '[，；。！？、]?', string)
 
 
+class Result:
+    def __init__(self, error_type=1, title=None, author=None, content=None):
+        self.title = title
+        self.author = author
+        self.content = content
+        self.error_type = error_type
+
+    def is_valid(self):
+        return self.error_type == 1
+
+    def error_msg(self):
+        if self.error_type == 2:
+            return "诗句不完全。"
+
+    def __repr__(self):
+        if not self.is_valid():
+            return 'Error: {}'.format(self.error_type)
+        return 'Title: {}\nAuthor: {}\nContent: {}'.format(self.title, self.author, self.content)
+
+
 def judge(poem, inp):
     inp = r'.?'.join(list(inp))
     inp = mark_to_all(inp)
@@ -26,6 +46,15 @@ def judge(poem, inp):
     return line
 
 
+def exjudge(poem, inp):
+    poem = clear_mark(poem)
+    inp = clear_mark(inp)
+    w = poem.find(inp)
+    if w == -1:
+        return False
+    return True
+
+
 def reserve_search_poem(string):
     url = 'https://so.gushiwen.cn/search.aspx?value={}&valuej={}'.format(string, string[0])
     r = requests.get(url)
@@ -39,12 +68,14 @@ def reserve_search_poem(string):
     line = text.text
     res = judge(line, string)
     if not res:
-        return None
+        if not exjudge(line, string):
+            return None
+        return Result(error_type=2)
     title = data.find('p').text
     title = re.sub(r'[\n\r ]', '', title)
     author = data.find('p', class_='source').text
     author = re.sub(r'[\n\r ]', '', author)
-    return title, author, res
+    return Result(title=title, author=author, content=res)
 
 
 def search_poem(string):
@@ -60,9 +91,11 @@ def search_poem(string):
         return None
     res = judge(line.text, string)
     if not res:
-        return None
+        if not exjudge(line.text, string):
+            return None
+        return Result(error_type=2)
     author, title = data.find_all('a')[1].text.split('《')
-    return title[:-1], author, res
+    return Result(title=title[:-1], author=author, content=res)
 
 
 def get_poem():
