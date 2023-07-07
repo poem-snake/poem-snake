@@ -1,7 +1,4 @@
-import eventlet
 from sqlalchemy import desc, func
-
-eventlet.monkey_patch()
 import json
 import random
 from flask_socketio import SocketIO, emit
