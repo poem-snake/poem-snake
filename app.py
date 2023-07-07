@@ -3,33 +3,40 @@ from sqlalchemy import desc, func
 
 eventlet.monkey_patch()
 import json
-import datetime
 import random
 from flask_socketio import SocketIO, emit
 from flask_moment import Moment
-from werkzeug.security import generate_password_hash, check_password_hash
 from flask_migrate import Migrate
-from dotenv import load_dotenv
-from os import environ, path
-from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
+from flask_login import LoginManager, login_user, login_required, logout_user, current_user
 import api
-from flask_sqlalchemy import SQLAlchemy
 from wtforms.validators import DataRequired, EqualTo, Length
 from wtforms import SubmitField, StringField, PasswordField, HiddenField
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField, FileRequired, FileAllowed
 from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, current_app
 import time
-from libgravatar import Gravatar
-from sys import platform
 import os
 from PIL import Image
+from sys import platform
+from dotenv import load_dotenv
+from os import environ, path
 
 DEV = platform == 'win32'
 
 load_dotenv(path.join(path.abspath(path.dirname(__file__)), '.env'))
 app = Flask(__name__)
 app.secret_key = environ.get('sk')
+moment = Moment(app)
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = 'login'
+socket_io = SocketIO(app, logger=True, engineio_logger=True, cors_allowed_origins="*")
+
+from models import *
+
+DEV = platform == 'win32'
+
+load_dotenv(path.join(path.abspath(path.dirname(__file__)), '.env'))
 
 DIALECT = 'mysql'
 DRIVER = 'pymysql'
@@ -43,112 +50,9 @@ app.config['SQLALCHEMY_DATABASE_URI'] = '{}+{}://{}:{}@{}:{}/{}?charset=utf8'.fo
 if DEV:
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + app.root_path + '/data.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-db = SQLAlchemy(app, session_options={"expire_on_commit": False})
+
+db.init_app(app)
 migrate = Migrate(app, db)
-moment = Moment(app)
-login_manager = LoginManager()
-login_manager.init_app(app)
-login_manager.login_view = 'login'
-socket_io = SocketIO(app, logger=True, engineio_logger=True, cors_allowed_origins="*")
-
-
-class User(UserMixin, db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(20), unique=True)
-    password = db.Column(db.String(120))
-    admin = db.Column(db.Boolean, default=False)
-    email = db.Column(db.String(50), unique=True)
-    coin = db.Column(db.Integer)
-    avatar_uploaded = db.Column(db.Boolean, default=False)
-
-    def __repr__(self):
-        return '<User %r>' % self.username
-
-    def set_password(self, password):
-        self.password = generate_password_hash(password)
-
-    def check_password(self, password):
-        return check_password_hash(self.password, password)
-
-    def get_avatar(self):
-        if self.avatar_uploaded:
-            return url_for('static', filename='avatars/{}.png'.format(self.id))
-        else:
-            return Gravatar(self.email).get_image(default='identicon').replace('www.gravatar.com',
-                                                                               'gravatar.rotriw.com')
-
-    def info(self):
-        return {
-            'id': self.id,
-            'username': self.username,
-            'gravatar': self.get_avatar()
-        }
-
-    def get_coin(self):
-        if self.coin is None:
-            self.coin = Record.query.filter_by(user_id=self.id).count()
-            db.session.commit()
-        return self.coin
-
-
-class Record(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    line = db.Column(db.String(100))
-    title = db.Column(db.String(100))
-    author = db.Column(db.String(100))
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-    user = db.relationship(
-        'User', backref=db.backref('Record', lazy='dynamic'))
-    time = db.Column(db.DateTime, default=datetime.datetime.utcnow)
-    game_id = db.Column(db.Integer, db.ForeignKey('game.id'))
-    game = db.relationship(
-        'Game', backref=db.backref('Record', lazy='dynamic'))
-    gameround_id = db.Column(db.Integer, db.ForeignKey('game_round.id'))
-    gameround = db.relationship(
-        'GameRound', backref=db.backref('Record', lazy='dynamic'))
-
-    def info(self):
-        return {
-            'id': self.id,
-            'line': self.line,
-            'title': self.title,
-            'author': self.author,
-            'gravatar': self.user.get_avatar(),
-            'time': str(self.time),
-            'username': self.user.username,
-            'round': self.gameround.info(),
-        }
-
-
-class Game(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    text = db.Column(db.String(100))
-    title = db.Column(db.String(100))
-    author = db.Column(db.String(100))
-    records = db.relationship('Record')
-
-    def info(self):
-        return {'text': self.text, 'title': self.title, 'author': self.author}
-
-    def cleared_text(self):
-        return api.clear_mark(self.text)
-
-
-class GameRound(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    # text = db.Column(db.String(5))
-    game_id = db.Column(db.Integer, db.ForeignKey('game.id'))
-    game = db.relationship(
-        'Game', backref=db.backref('GameRound', lazy='dynamic'))
-    number = db.Column(db.Integer)
-    real_number = db.Column(db.Integer)
-
-    def get_character(self):
-        return self.game.cleared_text()[self.number]
-
-    def info(self):
-        return {'text': self.get_character(), 'number': self.number, 'real_number': self.real_number}
-
 
 users = []
 
