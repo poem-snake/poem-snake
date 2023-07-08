@@ -200,7 +200,6 @@ def round_start():
         db.session.add(roundnew)
         db.session.commit()
         current_app.round = roundnew
-        time.sleep(5)
         emit("round_start", {'message': "新回合开始", 'data': json.dumps(
             roundnew.info())}, broadcast=True)
 

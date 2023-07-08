@@ -39,12 +39,14 @@ socket.on('skip_check', function (data) {
 })
 
 socket.on('round_start', function (data) {
-    data = JSON.parse(data.data);
-    let char = $("#problem_now").text();
-    $("#problem_now").html(char);
-    let origin = $("#problem").text();
-    console.log(data, char, origin);
-    $("#problem").html(origin.slice(0, data.real_number) + `<span class="now_char" style="font-size:42px;" id="problem_now">` + data.text + `</span>` + origin.slice(data.real_number + 1));
+    setTimeout(function () {
+        data = JSON.parse(data.data);
+        let char = $("#problem_now").text();
+        $("#problem_now").html(char);
+        let origin = $("#problem").text();
+        console.log(data, char, origin);
+        $("#problem").html(origin.slice(0, data.real_number) + `<span class="now_char" style="font-size:42px;" id="problem_now">` + data.text + `</span>` + origin.slice(data.real_number + 1));
+    }, 3000);
 });
 
 socket.on("connect_message", function (data) {
@@ -260,7 +262,7 @@ $(document).ready(function () {
         $('#submit').removeClass("ui primary button").addClass("ui loading disabled primary button");
         let answer = $('#answer').val();
         lst_ans = answer;
-        if (answer.includes($(".now_char").text())){
+        if (answer.includes($(".now_char").text())) {
             answer = answer.replace($(".now_char").text(), "（）");
         }
         console.log(answer);
@@ -269,8 +271,7 @@ $(document).ready(function () {
     $('#answer').keydown(function (e) {
         if (e.keyCode == 13 && e.ctrlKey) {
             $('#submit').click();
-        }
-        else if ($(this).parent().hasClass('disabled')){
+        } else if ($(this).parent().hasClass('disabled')) {
             $("#answer").parent().removeClass("ui error disabled input").addClass("ui input");
             $(this).val(lst_ans);
         }
