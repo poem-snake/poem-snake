@@ -201,9 +201,51 @@ function update_coin() {
     })
 }
 
+function load_announcement() {
+    $.get("/api/announcements", function (data) {
+        data = data.announcements;
+        content = ''
+        for (let i = 0; i < data.length; i++) {
+            content += `
+        <span style="position: relative;">
+            <h2 style="display: inline-block;width: 50%;">${data[i].title}
+            ${data[i].pinned ? '<span style="color:red">[置顶]</span>' : ''}
+            </h2>
+            <small style=" float: right;width: 50%; text-align: right; color: #999;">${moment.utc(data[i].time).local().format('lll')}</small>
+        </span>
+        <div class="description">
+            ${data[i].content}
+        </div>
+        <div class="ui divider"></div>`
+        }
+        // console.log(content);
+        let modal = `
+        <div id ="announcement" class="ui modal">
+            <div class="header">
+                公告
+            </div>
+            <div class="content">
+                ${content}
+            </div>
+            <div class="actions">
+                <div class="ui positive button">确定</div>
+            </div>
+        </div>
+        `
+        $(document.body).append(modal);
+        $('#announcement').modal({
+            onHidden: function () {
+                $('#announcement').remove();
+                console.log("remove");
+            }
+        }).modal('show');
+    })
+}
+
 $(document).ready(function () {
     load_more();
     update_coin();
+    load_announcement();
     setInterval(function () {
         $("#history .date").each(function () {
             let time = $(this).attr('data');

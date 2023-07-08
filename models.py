@@ -105,3 +105,14 @@ class GameRound(db.Model):
 
     def info(self):
         return {'text': self.get_character(), 'number': self.number, 'real_number': self.real_number}
+
+
+class Announcement(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(100))
+    content = db.Column(db.String(1000))
+    time = db.Column(db.DateTime, default=datetime.datetime.utcnow)
+    pinned = db.Column(db.Boolean, default=False)
+
+    def info(self):
+        return {'title': self.title, 'content': self.content, 'time': str(self.time), 'pinned': self.pinned}

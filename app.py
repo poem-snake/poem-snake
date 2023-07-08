@@ -51,6 +51,9 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db.init_app(app)
 migrate = Migrate(app, db)
 
+from announcement import announcement
+app.register_blueprint(announcement)
+
 users = []
 
 

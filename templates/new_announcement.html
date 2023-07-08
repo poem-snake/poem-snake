@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+{% block title %}发布新公告{% endblock %}
+{% block nakebody %}
+    <script src="https://cdn.bootcdn.net/ajax/libs/simplemde/1.11.2/simplemde.min.js"></script>
+    <link href="https://cdn.bootcdn.net/ajax/libs/simplemde/1.11.2/simplemde.min.css" rel="stylesheet">
+    <div class="ui fullscreen modal">
+        <div class="header">
+            发布新公告
+        </div>
+        <div class="content">
+            <form class="ui form" id="form-raw">
+                <div class="field">
+                    <label>标题</label>
+                    <input type="text" id="title" placeholder="标题">
+                </div>
+                <div class="field">
+                    <label>内容</label>
+                    <textarea id="content" placeholder="内容"></textarea>
+                </div>
+                <dic class="field">
+                    <div class="ui toggle checkbox">
+                        <input type="checkbox" id="pinned" value="y">
+                        <label>置顶</label>
+                    </div>
+                </dic>
+            </form>
+        </div>
+        <div class="actions">
+            <div class="ui black deny button">
+                取消
+            </div>
+            <div class="ui positive right labeled icon button">
+                发布
+                <i class="checkmark icon"></i>
+            </div>
+        </div>
+    </div>
+    <form id="form" style="display: none" method="post">
+        {{ form.content }}
+        {{ form.title }}
+        <input name="pinned">
+        {{ form.csrf_token }}
+    </form>
+    <script>
+        var simplemde = new SimpleMDE({
+            element: document.getElementById("content")[0],
+        });
+        $('.ui.modal').modal({closeable : false}).modal('show');
+        $('.ui.positive.right.labeled.icon.button').click(function () {
+            $("#content").val(simplemde.value());
+            $("#title").val($("#form-raw #title").val());
+            if ($("#pinned").is(":checked")) {
+                $("input[name='pinned']").val('y');
+            } else {
+                $("input[name='pinned']").val('');
+            }
+            $('#form').submit();
+        });
+    </script>
+{% endblock nakebody %}
