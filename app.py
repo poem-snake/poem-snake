@@ -20,16 +20,9 @@ load_dotenv(path.join(path.abspath(path.dirname(__file__)), '.env'))
 app = Flask(__name__)
 app.secret_key = environ.get('sk')
 moment = Moment(app)
-login_manager = LoginManager()
-login_manager.init_app(app)
-login_manager.login_view = 'login'
 socket_io = SocketIO(app, logger=True, engineio_logger=True, cors_allowed_origins="*")
 
 from models import *
-
-DEV = platform == 'win32'
-
-load_dotenv(path.join(path.abspath(path.dirname(__file__)), '.env'))
 
 DIALECT = 'mysql'
 DRIVER = 'pymysql'
@@ -53,6 +46,7 @@ from account import account, login_manager
 app.register_blueprint(announcement)
 app.register_blueprint(account)
 login_manager.init_app(app)
+login_manager.login_view = 'account.login'
 
 users = []
 
