@@ -31,8 +31,7 @@ class User(UserMixin, db.Model):
         if self.avatar_uploaded:
             return url_for('static', filename='avatars/{}.png'.format(self.id))
         else:
-            return Gravatar(self.email).get_image(default='identicon').replace('www.gravatar.com',
-                                                                               'gravatar.rotriw.com')
+            return api.gravatar(self.email)
 
     def info(self):
         return {

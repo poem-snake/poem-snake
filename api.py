@@ -1,6 +1,7 @@
 import requests
 from bs4 import BeautifulSoup
 import regex as re
+from hashlib import md5
 
 
 def clear_mark(string):
@@ -96,6 +97,11 @@ def search_poem(string):
         return Result(error_type=2)
     author, title = data.find_all('a')[1].text.split('《')
     return Result(title=title[:-1], author=author, content=res)
+
+
+def gravatar(email):
+    hash = md5(email.encode("utf-8")).hexdigest()
+    return "https://gravatar.rotriw.com/avatar/{}?d=identicon".format(hash)
 
 
 def get_poem():

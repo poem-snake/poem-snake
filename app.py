@@ -42,14 +42,16 @@ migrate = Migrate(app, db)
 
 from announcement import announcement
 from account import account, login_manager
+from gameapi import gameapi
 
 app.register_blueprint(announcement)
 app.register_blueprint(account)
+app.register_blueprint(gameapi)
 login_manager.init_app(app)
 login_manager.login_view = 'account.login'
 
-users = []
-
+with app.app_context():
+    current_app.users = []
 
 @app.route('/')
 def main():
@@ -60,7 +62,7 @@ def main():
 @socket_io.on('connect')
 def connect():
     if current_user.is_authenticated:
-        users.append(current_user.id)
+        current_app.users.append(current_user.id)
     if not hasattr(current_app, 'game'):
         if Game.query.count() == 0:
             game_start()
@@ -76,12 +78,7 @@ def connect():
 @socket_io.on('disconnect')
 def disconnect():
     if current_user.is_authenticated:
-        users.remove(current_user.id)
-
-
-@app.route('/api/users')
-def get_users():
-    return jsonify([User.query.filter_by(id=u).first().info() for u in users])
+        current_app.users.remove(current_user.id)
 
 
 def game_start():
@@ -192,48 +189,6 @@ def test():
                   'round': json.dumps(current_app.round.info())})
 
 
-@app.route('/api/history')
-# @login_required
-def history():
-    last = request.args.get('last', 19260817, type=int)
-    records = Record.query.filter(Record.id < last).order_by(
-        desc(Record.id)).limit(10).all()
-    return jsonify([r.info() for r in records])
-
-
-@app.route('/api/ranklist')
-def ranklist():
-    perpage = request.args.get('perpage', 10, type=int)
-    page = request.args.get('page', 1, type=int)
-    users = User.query.join(Record, Record.user_id == User.id).with_entities(User.id, User.username, User.email,
-                                                                             func.count(Record.id),
-                                                                             User.avatar_uploaded).group_by(
-        User.id).order_by(
-        desc(func.count(Record.id))).paginate(page, perpage, False)
-    first = (page - 1) * perpage + 1
-    return jsonify({'page': page, "perpage": perpage, 'data': [
-        {"num": first + idx, "uid": u[0], "username": u[1], 'count': u[3],
-         'gravatar': Gravatar(u[2]).get_image(default='identicon').replace('www.gravatar.com',
-                                                                           'gravatar.rotriw.com')
-         if not u[4] else f'/static/avatars/{u[0]}.png'} for
-        idx, u in enumerate(users.items)]})
-
-
-@app.route('/api/coin')
-@login_required
-def coin():
-    return jsonify({'coin': current_user.get_coin()})
-
-
-@app.route('/api/skipcheck')
-@login_required
-def skipcheck():
-    if current_user.admin or current_user.get_coin() >= 50:
-        return jsonify(True)
-    else:
-        return jsonify(False)
-
-
 @socket_io.on('skip')
 @login_required
 def skip():
@@ -252,28 +207,6 @@ def skip():
 @socket_io.on('talk_message')
 def talk_message(data):
     socket_io.emit('talk', {'message': data, 'user': json.dumps(current_user.info())})
-
-
-@app.route('/api/upload', methods=['POST'])
-def upload_avatar():
-    class AvatarForm(FlaskForm):
-        avatar = FileField(validators=[FileRequired(), FileAllowed(['png', 'jpg'], 'Images only!')])
-
-    form = AvatarForm(meta={'csrf': False})
-    app.logger.info(request.files)
-    if form.validate_on_submit():
-        if not current_user.is_authenticated:
-            return jsonify({'status': 'error', 'message': '请先登录'})
-        filename = str(current_user.id) + '.png'
-        try:
-            form.avatar.data.save(os.path.join('./static/avatars/', filename))
-        except Exception as e:
-            return jsonify({'status': 'error', 'message': str(e)})
-        current_user.avatar_uploaded = False
-        db.session.commit()
-        return jsonify({'status': 'success', 'message': '上传成功'})
-    else:
-        return jsonify({'status': 'error', 'message': form.errors})
 
 
 if __name__ == '__main__':
