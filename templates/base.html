@@ -32,10 +32,10 @@
             {{ render_nav_item('main', '<i class="home icon"> </i> 主页') }}
             <div class="right menu">
                 {% if current_user.is_authenticated %}
-                {{ render_nav_item('logout', '登出') }}
+                {{ render_nav_item('account.logout', '登出') }}
                 {% else %}
-                {{ render_nav_item('register', '注册') }}
-                {{ render_nav_item('login', '登入') }}
+                {{ render_nav_item('account.register', '注册') }}
+                {{ render_nav_item('account.login', '登入') }}
                 {% endif %}
             </div>
         </div>

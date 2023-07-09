@@ -4,16 +4,12 @@ import random
 from flask_socketio import SocketIO, emit
 from flask_moment import Moment
 from flask_migrate import Migrate
-from flask_login import LoginManager, login_user, login_required, logout_user, current_user
-import api
-from wtforms.validators import DataRequired, EqualTo, Length
-from wtforms import SubmitField, StringField, PasswordField, HiddenField
+from flask_login import LoginManager, login_required, current_user
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField, FileRequired, FileAllowed
 from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, current_app
 import time
 import os
-from PIL import Image
 from sys import platform
 from dotenv import load_dotenv
 from os import environ, path
@@ -52,81 +48,19 @@ db.init_app(app)
 migrate = Migrate(app, db)
 
 from announcement import announcement
+from account import account, login_manager
+
 app.register_blueprint(announcement)
+app.register_blueprint(account)
+login_manager.init_app(app)
 
 users = []
-
-
-@login_manager.user_loader
-def load_user(user_id):
-    user = User.query.get(int(user_id))
-    return user
 
 
 @app.route('/')
 def main():
     v = random.random()
     return render_template('index.html', v=v)
-
-
-@app.route('/register', methods=['GET', 'POST'])
-def register():
-    class RegisterForm(FlaskForm):
-        username = StringField('Username', validators=[
-            DataRequired(), Length(1, 20)])
-        password = PasswordField('Password', validators=[
-            DataRequired(), Length(1, 128)])
-        password_check = PasswordField('Password_check', validators=[
-            DataRequired(), Length(1, 128), EqualTo("password")])
-        email = StringField('Email', validators=[
-            DataRequired(), Length(1, 50)])
-        submit = SubmitField('Register')
-
-    form = RegisterForm()
-    if form.validate_on_submit():
-        user = User.query.filter_by(username=form.username.data).first()
-        if user:
-            flash('Username already exists.')
-            return redirect(url_for('register'))
-        user = User(username=form.username.data)
-        user.set_password(form.password.data)
-        user.email = form.email.data
-        db.session.add(user)
-        db.session.commit()
-        flash('Register successfully.', 'success')
-        return redirect(url_for('login'))
-    return render_template('register.html', form=form)
-
-
-@app.route("/login", methods=['GET', 'POST'])
-def login():
-    class LoginForm(FlaskForm):
-        username = StringField('Username', validators=[
-            DataRequired(), Length(1, 20)])
-        password = PasswordField('Password', validators=[
-            DataRequired(), Length(1, 128)])
-        submit = SubmitField('Log in')
-
-    form = LoginForm()
-    if form.validate_on_submit():
-        user = User.query.filter_by(username=form.username.data).first()
-        if user is None:
-            flash('Username does not exist.')
-            return redirect(url_for('login'))
-        if not user.check_password(form.password.data):
-            flash('Password is wrong.')
-            return redirect(url_for('login'))
-        login_user(user, True)
-        flash('Login successfully.', 'success')
-        return redirect(url_for('main'))
-    return render_template('login.html', form=form, nake=True)
-
-
-@app.route("/logout")
-@login_required
-def logout():
-    logout_user()
-    return redirect(url_for('main'))
 
 
 @socket_io.on('connect')
@@ -346,45 +280,6 @@ def upload_avatar():
         return jsonify({'status': 'success', 'message': '上传成功'})
     else:
         return jsonify({'status': 'error', 'message': form.errors})
-
-
-@app.route('/account/crop', methods=['POST'])
-def crop_avatar():
-    class CropAvatarForm(FlaskForm):
-        x1 = HiddenField()
-        y1 = HiddenField()
-        x2 = HiddenField()
-        y2 = HiddenField()
-        submit = SubmitField('Crop')
-
-    form = CropAvatarForm(meta={'csrf': False})
-    if form.validate_on_submit():
-        x1 = int(form.x1.data)
-        y1 = int(form.y1.data)
-        x2 = int(form.x2.data)
-        y2 = int(form.y2.data)
-        filename = str(current_user.id) + '.png'
-        if not os.path.exists(os.path.join('./static/avatars/', filename)):
-            return jsonify({'status': 'error', 'message': '请先上传图片'})
-        im = Image.open(os.path.join('./static/avatars/', filename))
-        im = im.crop((x1, y1, x2, y2))
-        im = im.resize((512, 512), Image.ANTIALIAS)
-        im.save(os.path.join('./static/avatars/', filename))
-        current_user.avatar_uploaded = True
-        db.session.commit()
-        return jsonify({'status': 'success', 'message': '上传成功'})
-    return jsonify({'status': 'error', 'message': form.errors})
-
-
-@app.route('/account/avatar/')
-@login_required
-def change_avatar():
-    file_name = str(current_user.id) + '.png'
-    if os.path.exists(os.path.join('./static/avatars/', file_name)) and not current_user.avatar_uploaded:
-        t = 'crop'
-    else:
-        t = 'upload'
-    return render_template('avatar.html', type=t)
 
 
 if __name__ == '__main__':
