@@ -13,6 +13,7 @@ socket.on('disconnect', function () {
 });
 
 socket.on('game_start', function (data) {
+    setTimeout(function(){
     data = JSON.parse(data.data);
     text = data.text;
     title = data.title;
@@ -21,12 +22,16 @@ socket.on('game_start', function (data) {
     $('#problem').html(`<span class="now_char" style="font-size:42px;" id="problem_now">${text[0]}</span>${text.slice(1)}`);
     $('#title').html(`《${title}》`);
     $('#author').html(author);
+    },7000);
 });
 
 socket.on('game_end', function () {
-    $('#problem').text('等待下一题');
-    $('#title').html('');
-    $('#author').html('');
+    setTimeout(function()
+    {
+        $('#problem').text('等待下一题');
+        $('#title').html('');
+        $('#author').html('');
+    },3000);
 })
 
 socket.on('skip_check', function (data) {
