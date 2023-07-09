@@ -47,7 +47,7 @@ def register():
     return render_template('register.html', form=form)
 
 
-@account.route("/account/login", methods=['GET', 'POST'])
+@account.route("/login", methods=['GET', 'POST'])
 def login():
     class LoginForm(FlaskForm):
         username = StringField('Username', validators=[
@@ -71,14 +71,14 @@ def login():
     return render_template('login.html', form=form, nake=True)
 
 
-@account.route("/account/logout")
+@account.route("/logout")
 @login_required
 def logout():
     logout_user()
     return redirect(url_for('main'))
 
 
-@account.route('/account/crop', methods=['POST'])
+@account.route('/crop', methods=['POST'])
 def crop_avatar():
     class CropAvatarForm(FlaskForm):
         x1 = HiddenField()
@@ -106,7 +106,7 @@ def crop_avatar():
     return jsonify({'status': 'error', 'message': form.errors})
 
 
-@account.route('/account/avatar/')
+@account.route('/avatar/')
 @login_required
 def change_avatar():
     file_name = str(current_user.id) + '.png'
