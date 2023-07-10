@@ -2,7 +2,7 @@ name: Deploy to Rotriw Main Server
 on:
     push:
         branches:
-            - master
+            - main
     workflow_dispatch:
 jobs:
     checkdb:
