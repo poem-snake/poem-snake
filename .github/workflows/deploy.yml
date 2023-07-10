@@ -19,7 +19,7 @@ jobs:
                     pip install -r requirements.txt
             -   name: Set Environment Variables
                 run: |
-                    echo "sqlhost=${{ secrets.DB_HOST }}" >> .env
+                    echo "sqlhost=149.62.44.170" >> .env
                     echo "mysqlpassword=${{ secrets.DB_PASSWORD }}" >> .env
             -   name: Check database
                 run: |
