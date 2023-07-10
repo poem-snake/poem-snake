@@ -19,7 +19,7 @@ DIALECT = 'mysql'
 DRIVER = 'pymysql'
 USERNAME = 'poem_snake'
 PASSWORD = environ.get('mysqlpassword')
-HOST = '127.0.0.1'
+HOST = environ.get('sqlhost')
 PORT = '3306'
 DATABASE = 'poem_snake'
 app.config['SQLALCHEMY_DATABASE_URI'] = '{}+{}://{}:{}@{}:{}/{}?charset=utf8'.format(
