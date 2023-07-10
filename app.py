@@ -1,15 +1,7 @@
-from sqlalchemy import desc, func
-import json
 import random
-from flask_socketio import SocketIO, emit
 from flask_moment import Moment
 from flask_migrate import Migrate
-from flask_login import LoginManager, login_required, current_user
-from flask_wtf import FlaskForm
-from flask_wtf.file import FileField, FileRequired, FileAllowed
-from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, current_app
-import time
-import os
+from flask import Flask, render_template, current_app
 from sys import platform
 from dotenv import load_dotenv
 from os import environ, path
@@ -53,6 +45,7 @@ socket_io.init_app(app)
 
 with app.app_context():
     current_app.users = []
+
 
 @app.route('/')
 def main():
