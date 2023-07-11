@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+{% block title %}绑定洛谷账号{% endblock %}
+{% block nakebody %}
+    <script src="https://cdn.bootcdn.net/ajax/libs/simplemde/1.11.2/simplemde.min.js"></script>
+    <link href="https://cdn.bootcdn.net/ajax/libs/simplemde/1.11.2/simplemde.min.css" rel="stylesheet">
+    <div class="ui fullscreen modal">
+        <div class="header">
+            认证洛谷账号
+        </div>
+        <div class="content">
+            <form class="ui form" id="form-raw">
+                <div class="field">
+                    <label>洛谷ID</label>
+                    <input type="text" id="title" placeholder="洛谷ID">
+                </div>
+                <div class="field">
+                    <label>剪贴板编号：</label>
+                    <input type="text" id="paste" placeholder="剪贴板编号">
+                </div>
+            </form>
+        </div>
+        <div class="actions">
+            <div class="ui positive right labeled icon button">
+                提交
+                <i class="checkmark icon"></i>
+            </div>
+        </div>
+    </div>
+    <form id="form" style="display: none" method="post">
+        {{ form.luogu_id }}
+        {{ form.paste }}
+        {{ form.csrf_token }}
+    </form>
+    <script>
+        $('.ui.modal').modal({closeable : false}).modal('show');
+        $('.ui.positive.right.labeled.icon.button').click(function () {
+            $('#form #paste').val($('#form-raw #paste').val());
+            $('#form #luogu_id').val($('#form-raw #title').val());
+            $('#form').submit();
+        });
+    </script>
+{% endblock nakebody %}

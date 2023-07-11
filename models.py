@@ -17,6 +17,7 @@ class User(UserMixin, db.Model):
     email = db.Column(db.String(50), unique=True)
     coin = db.Column(db.Integer)
     avatar_uploaded = db.Column(db.Boolean, default=False)
+    luogu_id = db.Column(db.Integer, unique=True)
 
     def __repr__(self):
         return '<User %r>' % self.username
