@@ -27,6 +27,7 @@ jobs:
                     password: ${{ secrets.PASSWORD }}
                     port: ${{ secrets.PORT }}
                     script: |
+                        cd /project/poem_snake
                         pip3 install -r requirements.txt
                         pm2 restart poemsnake
 
