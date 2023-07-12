@@ -2,6 +2,12 @@
 {% block title %}古诗（）谜 — 主页{% endblock %}
 {% block body_style %}overflow: hidden;{% endblock %}
 {% block body %}
+<style>
+    .avatar{
+        width: 35px !important;
+        height: 35px !important;
+    }
+</style>
 <script src="{{url_for('static', filename='index.js')+'?v={}'.format(v)}}"></script>
 <div class="ui two column grid">
     <div class="two column row">

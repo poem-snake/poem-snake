@@ -112,7 +112,7 @@ socket.on('record_add', function (data) {
     let record = data;
     $("#history").prepend(`<div class="event">
             <div class="label">
-                <img src="${record.gravatar}">
+                <img class="avatar" src="${record.gravatar}">
             </div>
             <div class="content">
                 <div class="summary">
@@ -151,7 +151,7 @@ socket.on('talk', function (data) {
     udata = JSON.parse(data.user)
     $("#talk").prepend(`<div class="event">
     <div class="label">
-        <img src="${udata.gravatar}">
+        <img class="avatar" src="${udata.gravatar}">
     </div>
     <div class="content">
         <div class="summary">
@@ -176,7 +176,7 @@ function load_more() {
             let record = data[i];
             $("#history").append(`<div class="event">
             <div class="label">
-                <img src="${record.gravatar}">
+                <img class="avatar" src="${record.gravatar}">
             </div>
             <div class="content">
                 <div class="summary">
@@ -305,7 +305,7 @@ $(document).ready(function () {
             for (let i = 0; i < data.length; i++) {
                 let user = data[i];
                 $("#online").append(`<div class="item">
-                <img class="ui avatar image" src="${user.gravatar}">
+                <img class="avatar" src="${user.gravatar}">
                 <div class="content">
                     <a class="header">${user.username}</a>
                     <div class="description">在线！</div>

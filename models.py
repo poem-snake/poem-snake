@@ -31,6 +31,8 @@ class User(UserMixin, db.Model):
     def get_avatar(self):
         if self.avatar_uploaded:
             return url_for('static', filename='avatars/{}.png'.format(self.id))
+        elif self.luogu_id:
+            return f'https://cdn.luogu.com.cn/upload/usericon/{self.luogu_id}.png'
         else:
             return api.gravatar(self.email)
 
