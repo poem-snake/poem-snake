@@ -305,7 +305,7 @@ $(document).ready(function () {
             for (let i = 0; i < data.length; i++) {
                 let user = data[i];
                 $("#online").append(`<div class="item">
-                <img class="avatar" src="${user.gravatar}">
+                <img class="ui avatar image" src="${user.gravatar}">
                 <div class="content">
                     <a class="header">${user.username}</a>
                     <div class="description">在线！</div>
