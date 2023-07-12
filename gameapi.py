@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify,current_app
+from flask import Blueprint, request, jsonify, current_app
 from flask_login import login_required, current_user
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField, FileAllowed, FileRequired
@@ -27,17 +27,18 @@ def history():
 def ranklist():
     perpage = request.args.get('perpage', 10, type=int)
     page = request.args.get('page', 1, type=int)
-    users = User.query.join(Record, Record.user_id == User.id).with_entities(User.id, User.username, User.email,
-                                                                             func.count(Record.id),
-                                                                             User.avatar_uploaded).group_by(
-        User.id).order_by(
-        desc(func.count(Record.id))).paginate(page, perpage, False)
+    users = User.query.join(Record, Record.user_id == User.id).with_entities(User.id, func.count(Record.id)) \
+        .group_by(User.id).order_by(desc(func.count(Record.id))).paginate(page, perpage, False)
     first = (page - 1) * perpage + 1
+    data = []
+    for i in users.items:
+        u = User.query.filter_by(id=i[0]).first().info()
+        u['count'] = i[1]
+        data.append(u)
     return jsonify({'page': page, "perpage": perpage, 'data': [
-        {"num": first + idx, "uid": u[0], "username": u[1], 'count': u[3],
-         'gravatar': gravatar(u[2])
-         if not u[4] else f'/static/avatars/{u[0]}.png'} for
-        idx, u in enumerate(users.items)]})
+        {"num": first + idx, "uid": u['id'], "username": u['username'], 'count': u['count'],
+         'gravatar': u['gravatar']} for
+        idx, u in enumerate(data)]})
 
 
 @gameapi.route('/coin')
