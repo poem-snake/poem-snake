@@ -3,7 +3,7 @@
 {% block nakebody %}
     <script src="https://cdn.bootcdn.net/ajax/libs/simplemde/1.11.2/simplemde.min.js"></script>
     <link href="https://cdn.bootcdn.net/ajax/libs/simplemde/1.11.2/simplemde.min.css" rel="stylesheet">
-    <div class="ui fullscreen modal">
+    <div class="ui modal">
         <div class="header">
             认证洛谷账号
         </div>
@@ -11,13 +11,14 @@
             <form class="ui form" id="form-raw">
                 <div class="field">
                     <label>洛谷ID</label>
-                    <input type="text" id="title" placeholder="洛谷ID">
+                    <input type="text" id="raw_id" placeholder="洛谷ID">
                 </div>
                 <div class="field">
                     <label>剪贴板编号：</label>
-                    <input type="text" id="paste" placeholder="剪贴板编号">
+                    <input type="text" id="raw_paste" placeholder="剪贴板编号">
                 </div>
             </form>
+            <p class="ui segment">认证流程：<a id="copycode">复制代码</a> 并在洛谷任意界面的 F12 Console 中运行。将您的洛谷 ID 和运行结果的编号（8 位字符串，自动复制）填入上面的输入框中。</p>
         </div>
         <div class="actions">
             <div class="ui positive right labeled icon button">
@@ -26,6 +27,39 @@
             </div>
         </div>
     </div>
+    <code id="code" style="display: none">
+    (async function () {
+    try {
+        await fetch('https://www.luogu.com.cn/paste/new', {
+            'headers': {
+                'content-type': 'application/json;charset=UTF-8',
+                'x-csrf-token': document.getElementsByName('csrf-token')[0].content,
+                'x-requested-with': 'XMLHttpRequest'
+            },
+            'referrer': `https://www.luogu.com.cn/user/${_feInstance.currentUser.uid}`,
+            'referrerPolicy': 'strict-origin-when-cross-origin',
+            'body': `{"data":"poem snake auth: ${_feInstance.currentUser.uid}","public":true}`,
+            'method': 'POST',
+            'mode': 'cors',
+            'credentials': 'include'
+        }).then(res => res.json()).then(res => {
+            let input = confirm(`您的验证剪贴板编号为：${res.id}，点击确定以复制。`);
+            if (input) {
+                var node = document.createElement('input');
+                node.value = res.id;
+                document.body.appendChild(node);
+                node.select();
+                document.execCommand('Copy');
+                node.style.display = 'none';
+            }
+        });
+    } catch (e) {
+        console.error(e);
+        alert('好像哪里有点问题\n' + e.toString());
+    }
+})();
+
+    </code>
     <form id="form" style="display: none" method="post">
         {{ form.luogu_id }}
         {{ form.paste }}
@@ -33,10 +67,20 @@
     </form>
     <script>
         $('.ui.modal').modal({closeable : false}).modal('show');
+        $('.ui.modal').modal('attach events', '.ui.positive.right.labeled.icon.button', 'show');
         $('.ui.positive.right.labeled.icon.button').click(function () {
-            $('#form #paste').val($('#form-raw #paste').val());
-            $('#form #luogu_id').val($('#form-raw #title').val());
-            $('#form').submit();
+            $('#form #paste').val($('#form-raw #raw_paste').val());
+            $('#form #luogu_id').val($('#form-raw #raw_id').val());
+            $('#form').submit()
+        });
+        $('#copycode').click(function () {
+            var node = document.createElement('textarea');
+            node.value = $('#code').text();
+            document.body.appendChild(node);
+            node.select();
+            document.execCommand('Copy');
+            node.style.display = 'none';
+            alert('已复制到剪贴板');
         });
     </script>
 {% endblock nakebody %}
