@@ -27,18 +27,19 @@ def history():
 def ranklist():
     perpage = request.args.get('perpage', 10, type=int)
     page = request.args.get('page', 1, type=int)
-    users = User.query.join(Record, Record.user_id == User.id).with_entities(User.id, func.count(Record.id)) \
-        .group_by(User.id).order_by(desc(func.count(Record.id))).paginate(page, perpage, False)
+    users = db.session.query(User, func.count(Record.id)). \
+        join(Record, Record.user_id == User.id). \
+        group_by(User.id). \
+        order_by(desc(func.count(Record.id))). \
+        paginate(page, perpage, False)
     first = (page - 1) * perpage + 1
-    data = []
-    for i in users.items:
-        u = User.query.filter_by(id=i[0]).first().info()
-        u['count'] = i[1]
-        data.append(u)
-    return jsonify({'page': page, "perpage": perpage, 'data': [
-        {"num": first + idx, "uid": u['id'], "username": u['username'], 'count': u['count'],
-         'gravatar': u['gravatar']} for
-        idx, u in enumerate(data)]})
+    res = []
+    for user, count in users.items:
+        u = user.info()
+        u.update({'num': first, 'count': count})
+        res.append(u)
+        first += 1
+    return jsonify({"data": res})
 
 
 @gameapi.route('/coin')
