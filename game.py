@@ -1,13 +1,13 @@
-from flask import  current_app
-from flask_login import current_user,login_required
+from flask import current_app
+from flask_login import current_user, login_required
 from flask_socketio import emit, SocketIO
 from models import *
 from sqlalchemy import desc
 import json
 import api
 
+socket_io = SocketIO(logger=True, engineio_logger=True, cors_allowed_origins="*")
 
-socket_io = SocketIO( logger=True, engineio_logger=True, cors_allowed_origins="*")
 
 @socket_io.on('connect')
 def connect():
@@ -155,4 +155,3 @@ def skip():
 @socket_io.on('talk_message')
 def talk_message(data):
     socket_io.emit('talk', {'message': data, 'user': json.dumps(current_user.info())})
-
