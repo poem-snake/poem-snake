@@ -4,7 +4,7 @@ var urd = 0;
 var socket = io();
 var lst_ans = "";
 socket.on('connect', function () {
-    console.log('connected to server');
+    //console.log('connected to server');
 });
 
 socket.on('disconnect', function () {
@@ -18,7 +18,7 @@ socket.on('game_start', function (data) {
         text = data.text;
         title = data.title;
         author = data.author;
-        console.log(text, title, author);
+        //console.log(text, title, author);
         $('#problem').html(`<span class="now_char" style="font-size:42px;" id="problem_now">${text[0]}</span>${text.slice(1)}`);
         $('#title').html(`《${title}》`);
         $('#author').html(author);
@@ -48,7 +48,7 @@ socket.on('round_start', function (data) {
         let char = $("#problem_now").text();
         $("#problem_now").html(char);
         let origin = $("#problem").text();
-        console.log(data, char, origin);
+        // console.log(data, char, origin);
         $("#problem").html(origin.slice(0, data.real_number) + `<span class="now_char" style="font-size:42px;" id="problem_now">` + data.text + `</span>` + origin.slice(data.real_number + 1));
     }, 3000);
 });
@@ -65,11 +65,11 @@ socket.on("connect_message", function (data) {
                                           </h2></div></div>`);
         $("#submit").addClass("disabled");
     }
-    console.log(game, round);
+    // console.log(game, round);
     text = game.text;
     title = game.title;
     author = game.author;
-    console.log(text, title, author);
+    // console.log(text, title, author);
     $('#problem').html(text);
     $('#title').html(`《${title}》`);
     $('#author').html(author);
@@ -92,7 +92,7 @@ socket.on('answer_check', function (data) {
         }, 2000);
     } else {
         $("#answer").parent().removeClass("ui input").addClass("uidisabled input");
-        console.log("test success");
+        //console.log("test success");
         update_coin();
         $("#answer").val(mes);
         setTimeout(function () {
@@ -170,7 +170,7 @@ var last = 10000000000;
 
 function load_more() {
     $.get(`/api/history?last=${last}`, function (data) {
-        console.log(data);
+        //console.log(data);
         for (let i = 0; i < data.length; i++) {
             let record = data[i];
             $("#history").append(`<div class="event">
@@ -242,7 +242,7 @@ function load_announcement() {
         $('#announcement').modal({
             onHidden: function () {
                 $('#announcement').remove();
-                console.log("remove");
+                //console.log("remove");
             }
         }).modal('show');
     })
@@ -269,7 +269,7 @@ $(document).ready(function () {
         if (answer.includes($(".now_char").text())) {
             answer = answer.replace($(".now_char").text(), "（）");
         }
-        console.log(answer);
+        //console.log(answer);
         socket.emit('answer', {data: answer});
     });
     $('#answer').keydown(function (e) {
@@ -331,7 +331,7 @@ $(document).ready(function () {
     });
     $('[data-tab="talk"].item').click(function () {
         urd = 0;
-        console.log(urd);
+        //console.log(urd);
         $("#urdlb").remove();
     });
 });
