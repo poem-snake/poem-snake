@@ -208,44 +208,51 @@ function update_coin() {
 }
 
 function load_announcement() {
-    $.get("/api/announcements", function (data) {
-        data = data.announcements;
-        content = ''
-        for (let i = 0; i < data.length; i++) {
-            content += `
-        <span style="position: relative;">
-            <h2 style="display: inline-block;width: 50%;">${data[i].title}
-            ${data[i].pinned ? '<span style="color:red">[置顶]</span>' : ''}
-            </h2>
-            <small style=" float: right;width: 50%; text-align: right; color: #999;">${moment.utc(data[i].time).local().format('lll')}</small>
-        </span>
-        <div class="description">
-            ${data[i].content}
-        </div>
-        <div class="ui divider"></div>`
+    let last_seen = localStorage.getItem("last_seen");
+    let x = new Date()
+    localStorage.setItem("last_seen", (x.getTime() + x.getTimezoneOffset() * 60 * 1000) / 1000);
+    $.get("/api/announcement/newest", function (data) {
+        if (data.time > last_seen) {
+            $.get("/api/announcements", function (data) {
+                data = data.announcements;
+                content = ''
+                for (let i = 0; i < data.length; i++) {
+                    content += `
+                <span style="position: relative;">
+                    <h2 style="display: inline-block;width: 50%;">${data[i].title}
+                    ${data[i].pinned ? '<span style="color:red">[置顶]</span>' : ''}
+                    </h2>
+                    <small style=" float: right;width: 50%; text-align: right; color: #999;">${moment.utc(data[i].time).local().format('lll')}</small>
+                </span>
+                <div class="description">
+                    ${data[i].content}
+                </div>
+                <div class="ui divider"></div>`
+                }
+                // console.log(content);
+                let modal = `
+                <div id ="announcement" class="ui modal">
+                    <div class="header">
+                        公告
+                    </div>
+                    <div class="content">
+                        ${content}
+                    </div>
+                    <div class="actions">
+                        <div class="ui positive button">确定</div>
+                    </div>
+                </div>
+                `
+                $(document.body).append(modal);
+                $('#announcement').modal({
+                    onHidden: function () {
+                        $('#announcement').remove();
+                        //console.log("remove");
+                    }
+                }).modal('show');
+            });
         }
-        // console.log(content);
-        let modal = `
-        <div id ="announcement" class="ui modal">
-            <div class="header">
-                公告
-            </div>
-            <div class="content">
-                ${content}
-            </div>
-            <div class="actions">
-                <div class="ui positive button">确定</div>
-            </div>
-        </div>
-        `
-        $(document.body).append(modal);
-        $('#announcement').modal({
-            onHidden: function () {
-                $('#announcement').remove();
-                //console.log("remove");
-            }
-        }).modal('show');
-    })
+    });
 }
 
 $(document).ready(function () {
@@ -270,7 +277,7 @@ $(document).ready(function () {
             answer = answer.replace($(".now_char").text(), "（）");
         }
         //console.log(answer);
-        socket.emit('answer', {data: answer});
+        socket.emit('answer', { data: answer });
     });
     $('#answer').keydown(function (e) {
         if (e.keyCode == 13 && e.ctrlKey) {
@@ -295,7 +302,7 @@ $(document).ready(function () {
     $('.tabular.menu .item').tab();
     $('.tabular.menu .item').tab('change tab', 'history');
     $("#talk_submit").click(function () {
-        socket.emit("talk_message", {data: $("#talk_input").val()})
+        socket.emit("talk_message", { data: $("#talk_input").val() })
         $("#talk_input").val("")
     })
     $('[data-tab="online"].item').click(function () {
