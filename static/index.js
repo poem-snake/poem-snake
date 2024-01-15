@@ -209,8 +209,7 @@ function update_coin() {
 
 function load_announcement() {
     let last_seen = localStorage.getItem("last_seen");
-    let x = new Date()
-    localStorage.setItem("last_seen", (x.getTime() + x.getTimezoneOffset() * 60 * 1000) / 1000);
+    localStorage.setItem("last_seen", Date.now() / 1000);
     $.get("/api/announcement/newest", function (data) {
         if (data.time > last_seen) {
             $.get("/api/announcements", function (data) {
