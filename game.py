@@ -63,9 +63,7 @@ def round_start():
         roundnew = GameRound()
         roundnew.text = game.cleared_text()[round.number + 1]
         roundnew.number = round.number + 1
-        if game.text[round.real_number + 1] == '，' or game.text[round.real_number + 1] == '？' or game.text[
-            round.real_number + 1] == '。' or game.text[round.real_number + 1] == '！' or game.text[
-            round.real_number + 1] == '。' or game.text[round.real_number + 1] == '，':
+        if game.text[round.real_number + 1] in ['，', '？', '。', '！', '。', '：']:
             roundnew.real_number = round.real_number + 2
         else:
             roundnew.real_number = round.real_number + 1
